@@ -1,0 +1,167 @@
+name: VibeScreen Ambient Companion
+description: Next.js application with Three.js scenes and AI personality modes for second monitor ambient computing
+category: frankenstein
+hackathon: kiroween-2025
+
+requirements:
+  core:
+    - Next.js application with pages router
+    - 10+ personality modes with unique scenes and characters
+    - Three.js integration with react-three-fiber
+    - Dynamic message popup system
+    - Mode selector interface
+    - JSON-driven configuration
+
+  visual_design:
+    - Linux terminal/Matrix aesthetic with dark green color scheme
+    - Fallout-style terminal interface elements
+    - Full-screen 3D backgrounds (100vw x 100vh)
+    - Characters positioned in bottom-right corner
+    - Phosphor glow and scan line effects
+    - Monospace terminal fonts
+
+  technical:
+    - Responsive design (desktop-optimized)
+    - Accessibility compliance with high contrast and reduced motion modes
+    - Dynamic imports for performance
+    - Error boundaries for Three.js components
+    - Keyboard navigation support
+
+api:
+  endpoints:
+    - path: /api/modes
+      method: GET
+      description: Returns list of available modes with metadata
+      response:
+        type: array
+        items:
+          id: string
+          name: string
+          popupStyle: enum[overlay, speechBubble]
+          minDelaySeconds: number
+          maxDelaySeconds: number
+          sceneProps: object
+
+pages:
+  - path: /
+    description: Homepage with mode selector and controls
+    components:
+      - ModeSelector
+      - ControlsBar
+      - SceneWrapper
+      - MessagePopup
+    
+  - path: /mode/[id]
+    description: Dynamic mode renderer (optional direct access)
+    params:
+      id: string (mode identifier)
+
+components:
+  SceneWrapper:
+    purpose: Universal Three.js scene container
+    props:
+      mode: string
+      sceneProps: object
+    
+  ModeSelector:
+    purpose: Bottom navigation bar for mode switching
+    props:
+      modes: array
+      activeMode: string
+      onModeChange: function
+    
+  MessagePopup:
+    purpose: Handles overlay and speech bubble messages
+    props:
+      type: enum[overlay, speechBubble]
+      message: string
+      position: object (for speechBubble)
+      duration: number
+    
+  CharacterHost:
+    purpose: Loads and positions active mode character
+    props:
+      mode: string
+      onSpeak: function
+    
+  ModeLoader:
+    purpose: Dynamic import handler for mode components
+    props:
+      modeId: string
+
+modes:
+  structure:
+    - config.json (mode metadata and settings)
+    - messages.json (array of message strings)
+    - scene.js (Three.js background component)
+    - character.js (animated character component)
+  
+  required_modes:
+    - corporate-ai
+    - chaos
+    - emotional-damage
+    - therapist
+    - startup-founder
+    - doomsday-prophet
+    - zen-monk
+    - gamer-rage
+    - influencer
+    - wholesome-grandma
+    - spooky (bonus)
+
+data:
+  global_config:
+    path: /data/global-config.json
+    schema:
+      defaultMinDelaySeconds: number
+      defaultMaxDelaySeconds: number
+      defaultPopupStyle: string
+      animationSpeedMultiplier: number
+  
+  master_messages:
+    path: /data/master-messages/
+    files:
+      - funny-exaggerations.json
+      - cliche-ai-phrases.json
+      - cliche-ai-things.json
+
+testing:
+  manual_tests:
+    - Load homepage and verify mode selector appears
+    - Switch between modes and verify scene changes
+    - Click "test popup now" and verify message appears
+    - Verify popup styles (overlay vs speechBubble) work correctly
+    - Test keyboard navigation of mode selector
+    - Verify messages rotate automatically with configured timing
+    - Test pause/resume functionality
+    - Verify mobile responsiveness
+
+  automated_tests:
+    - API endpoint returns valid mode data
+    - All mode configs are valid JSON
+    - All required mode files exist
+    - Components render without errors
+    - Dynamic imports work correctly
+
+deployment:
+  requirements:
+    - Static export compatible
+    - No external API dependencies
+    - All assets bundled or in public folder
+    - Environment variables for optional features only
+
+kiro_integration:
+  vibe_coding:
+    - Component generation with consistent patterns
+    - Three.js scene creation with placeholder geometry
+    - Message system implementation
+  
+  specs:
+    - This specification file for validation
+    - API contract definition
+    - Component interface documentation
+  
+  steering:
+    - Project context and architecture principles
+    - Development standards and conventions
+    - Three.js implementation guidelines
