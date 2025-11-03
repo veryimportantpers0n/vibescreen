@@ -1,434 +1,533 @@
 /**
- * Task 7 Final Validation Test
- * Comprehensive test of API functionality covering all requirements
+ * Task 7 Final Validation Test - Browser Environment
+ * 
+ * This test validates the complete Scene Wrapper functionality in a browser environment
+ * where React and Three.js can actually run. It covers all requirements from task 7.
  */
 
-import fs from 'fs/promises';
-import path from 'path';
+// Test configuration
+const TASK_7_TEST_CONFIG = {
+  testName: 'Task 7 - Complete Scene Wrapper Functionality Validation',
+  timeout: 10000,
+  performanceTestDuration: 3000,
+  resizeTestCount: 5,
+  modeSwithingTestCount: 10
+};
 
-// Mock request/response for testing
-function createMockRequest(method = 'GET', query = {}) {
-  return { method, query, headers: {} };
-}
+// Global test results
+window.task7TestResults = {
+  passed: 0,
+  failed: 0,
+  errors: [],
+  startTime: null,
+  endTime: null
+};
 
-function createMockResponse() {
-  const res = {
-    headers: {},
-    statusCode: 200,
-    responseData: null,
-    ended: false,
-    
-    setHeader(name, value) { this.headers[name] = value; return this; },
-    status(code) { this.statusCode = code; return this; },
-    json(data) { this.responseData = data; return this; },
-    end() { this.ended = true; return this; }
-  };
-  return res;
-}
-
-async function runTask7Tests() {
-  console.log('🚀 Task 7: Complete API Functionality Validation');
-  console.log('=' .repeat(60));
+/**
+ * Log test results
+ */
+function logTask7Result(testName, passed, details = '') {
+  const status = passed ? '✅ PASS' : '❌ FAIL';
+  console.log(`${status}: ${testName}`);
   
-  let allTestsPassed = true;
-  const testResults = [];
+  if (details) {
+    console.log(`   ${details}`);
+  }
+  
+  if (passed) {
+    window.task7TestResults.passed++;
+  } else {
+    window.task7TestResults.failed++;
+    window.task7TestResults.errors.push({ test: testName, details });
+  }
+}
+
+/**
+ * Test 1: Canvas Initialization and Three.js Context Creation
+ */
+function testTask7CanvasInitialization() {
+  return new Promise((resolve) => {
+    console.log('\n🎮 Testing Canvas Initialization and Three.js Context Creation...');
+    
+    try {
+      // Create test container
+      const container = document.createElement('div');
+      container.id = 'task7-canvas-test';
+      container.style.cssText = 'position: fixed; top: -1000px; left: -1000px; width: 800px; height: 600px;';
+      document.body.appendChild(container);
+      
+      // Check if SceneWrapper is available
+      if (typeof window.SceneWrapper === 'undefined') {
+        logTask7Result('Canvas initialization test', false, 'SceneWrapper component not available in global scope');
+        document.body.removeChild(container);
+        resolve(false);
+        return;
+      }
+      
+      // Create SceneWrapper instance
+      const sceneWrapperElement = React.createElement(window.SceneWrapper, {
+        mode: 'task7-test',
+        sceneProps: {
+          camera: { position: [0, 0, 5], fov: 75 },
+          lighting: { ambientIntensity: 0.5, pointLightPosition: [10, 10, 10] }
+        }
+      });
+      
+      const root = ReactDOM.createRoot(container);
+      root.render(sceneWrapperElement);
+      
+      // Wait for component to initialize
+      setTimeout(() => {
+        const canvas = container.querySelector('canvas');
+        const sceneWrapper = container.querySelector('.scene-wrapper');
+        
+        const canvasCreated = !!canvas;
+        const wrapperCreated = !!sceneWrapper;
+        const hasProperStyling = sceneWrapper && 
+                                sceneWrapper.style.position === 'fixed' &&
+                                sceneWrapper.style.width === '100vw' &&
+                                sceneWrapper.style.height === '100vh';
+        
+        const passed = canvasCreated && wrapperCreated && hasProperStyling;
+        
+        logTask7Result(
+          'Canvas initialization and Three.js context creation',
+          passed,
+          passed 
+            ? 'Canvas and wrapper created with proper styling and Three.js integration'
+            : `Failed - Canvas: ${canvasCreated}, Wrapper: ${wrapperCreated}, Styling: ${hasProperStyling}`
+        );
+        
+        // Cleanup
+        root.unmount();
+        document.body.removeChild(container);
+        resolve(passed);
+      }, 500);
+      
+    } catch (error) {
+      logTask7Result('Canvas initialization and Three.js context creation', false, error.message);
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Test 2: Error Boundary Functionality
+ */
+function testTask7ErrorBoundary() {
+  return new Promise((resolve) => {
+    console.log('\n🚨 Testing Error Boundary for Three.js Failure Scenarios...');
+    
+    try {
+      const container = document.createElement('div');
+      container.id = 'task7-error-test';
+      container.style.cssText = 'position: fixed; top: -1000px; left: -1000px; width: 800px; height: 600px;';
+      document.body.appendChild(container);
+      
+      // Create error component
+      const ErrorComponent = () => {
+        throw new Error('Test WebGL context lost error');
+      };
+      
+      let errorCaught = false;
+      const onError = (error, context) => {
+        errorCaught = true;
+        console.log('   ✓ Error callback executed with context:', !!context);
+      };
+      
+      const sceneWrapperElement = React.createElement(window.SceneWrapper, {
+        mode: 'error-test',
+        onError: onError
+      }, React.createElement(ErrorComponent));
+      
+      const root = ReactDOM.createRoot(container);
+      root.render(sceneWrapperElement);
+      
+      setTimeout(() => {
+        const fallbackUI = container.querySelector('.scene-fallback');
+        const errorTitle = container.querySelector('.error-title');
+        const ambientAnimation = container.querySelector('.ambient-animation');
+        
+        const hasFallbackUI = !!fallbackUI;
+        const hasErrorTitle = !!errorTitle;
+        const hasAmbientAnimation = !!ambientAnimation;
+        
+        const passed = hasFallbackUI && hasErrorTitle && hasAmbientAnimation && errorCaught;
+        
+        logTask7Result(
+          'Error boundary catches Three.js failure scenarios',
+          passed,
+          passed 
+            ? 'Error boundary displays fallback UI with ambient animations and executes error callback'
+            : `Failed - Fallback: ${hasFallbackUI}, Title: ${hasErrorTitle}, Animation: ${hasAmbientAnimation}, Callback: ${errorCaught}`
+        );
+        
+        // Cleanup
+        root.unmount();
+        document.body.removeChild(container);
+        resolve(passed);
+      }, 300);
+      
+    } catch (error) {
+      logTask7Result('Error boundary catches Three.js failure scenarios', false, error.message);
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Test 3: Performance with Rapid Scene Changes
+ */
+function testTask7Performance() {
+  return new Promise((resolve) => {
+    console.log('\n⚡ Testing Performance with Rapid Scene Changes...');
+    
+    try {
+      const container = document.createElement('div');
+      container.id = 'task7-performance-test';
+      container.style.cssText = 'position: fixed; top: -1000px; left: -1000px; width: 800px; height: 600px;';
+      document.body.appendChild(container);
+      
+      const root = ReactDOM.createRoot(container);
+      let renderCount = 0;
+      const startTime = performance.now();
+      const renderTimes = [];
+      
+      const testModes = ['corporate-ai', 'zen-monk', 'chaos', 'emotional-damage'];
+      const testSceneProps = [
+        { bgColor: '#001100', ambientSpeed: 1.0 },
+        { bgColor: '#110000', ambientSpeed: 2.0 },
+        { bgColor: '#000011', ambientSpeed: 0.5 },
+        { bgColor: '#111100', ambientSpeed: 1.5 }
+      ];
+      
+      const performRapidSwitch = () => {
+        const renderStart = performance.now();
+        
+        const mode = testModes[renderCount % testModes.length];
+        const sceneProps = testSceneProps[renderCount % testSceneProps.length];
+        
+        const sceneWrapperElement = React.createElement(window.SceneWrapper, {
+          mode: mode,
+          sceneProps: sceneProps,
+          key: `perf-test-${renderCount}`
+        });
+        
+        root.render(sceneWrapperElement);
+        
+        const renderEnd = performance.now();
+        renderTimes.push(renderEnd - renderStart);
+        renderCount++;
+        
+        if (renderCount < TASK_7_TEST_CONFIG.modeSwithingTestCount) {
+          setTimeout(performRapidSwitch, 100);
+        } else {
+          // Analyze performance
+          const totalTime = performance.now() - startTime;
+          const avgRenderTime = renderTimes.reduce((a, b) => a + b, 0) / renderTimes.length;
+          const maxRenderTime = Math.max(...renderTimes);
+          
+          const avgRenderTimeGood = avgRenderTime < 50; // Less than 50ms average
+          const maxRenderTimeAcceptable = maxRenderTime < 200; // Less than 200ms max
+          const totalTimeReasonable = totalTime < 5000; // Less than 5 seconds total
+          
+          const passed = avgRenderTimeGood && maxRenderTimeAcceptable && totalTimeReasonable;
+          
+          logTask7Result(
+            'Performance with multiple rapid scene changes',
+            passed,
+            passed 
+              ? `Excellent performance: ${renderCount} switches in ${totalTime.toFixed(0)}ms (avg: ${avgRenderTime.toFixed(1)}ms)`
+              : `Performance issues: avg ${avgRenderTime.toFixed(1)}ms, max ${maxRenderTime.toFixed(1)}ms, total ${totalTime.toFixed(0)}ms`
+          );
+          
+          // Cleanup
+          root.unmount();
+          document.body.removeChild(container);
+          resolve(passed);
+        }
+      };
+      
+      performRapidSwitch();
+      
+    } catch (error) {
+      logTask7Result('Performance with multiple rapid scene changes', false, error.message);
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Test 4: Responsive Behavior and Canvas Resizing
+ */
+function testTask7ResponsiveBehavior() {
+  return new Promise((resolve) => {
+    console.log('\n📱 Testing Responsive Behavior and Canvas Resizing...');
+    
+    try {
+      const container = document.createElement('div');
+      container.id = 'task7-responsive-test';
+      container.style.cssText = 'position: fixed; top: -1000px; left: -1000px; width: 800px; height: 600px;';
+      document.body.appendChild(container);
+      
+      const root = ReactDOM.createRoot(container);
+      
+      const sceneWrapperElement = React.createElement(window.SceneWrapper, {
+        mode: 'responsive-test',
+        sceneProps: { bgColor: '#001122' }
+      });
+      
+      root.render(sceneWrapperElement);
+      
+      // Store original dimensions
+      const originalWidth = window.innerWidth;
+      const originalHeight = window.innerHeight;
+      
+      const viewportSizes = [
+        { width: 375, height: 667 }, // Mobile
+        { width: 768, height: 1024 }, // Tablet
+        { width: 1920, height: 1080 } // Desktop
+      ];
+      
+      let resizeTestsCompleted = 0;
+      let resizeTestsPassed = 0;
+      
+      const testResize = (viewport, index) => {
+        setTimeout(() => {
+          // Mock window dimensions
+          Object.defineProperty(window, 'innerWidth', { value: viewport.width, writable: true });
+          Object.defineProperty(window, 'innerHeight', { value: viewport.height, writable: true });
+          
+          // Trigger resize event
+          window.dispatchEvent(new Event('resize'));
+          
+          setTimeout(() => {
+            const canvas = container.querySelector('canvas');
+            const sceneWrapper = container.querySelector('.scene-wrapper');
+            
+            const canvasExists = !!canvas;
+            const wrapperResponsive = sceneWrapper && 
+                                   sceneWrapper.style.width === '100vw' &&
+                                   sceneWrapper.style.height === '100vh';
+            
+            if (canvasExists && wrapperResponsive) {
+              resizeTestsPassed++;
+            }
+            
+            resizeTestsCompleted++;
+            
+            if (resizeTestsCompleted === viewportSizes.length) {
+              // Restore original dimensions
+              Object.defineProperty(window, 'innerWidth', { value: originalWidth, writable: true });
+              Object.defineProperty(window, 'innerHeight', { value: originalHeight, writable: true });
+              
+              const allPassed = resizeTestsPassed === viewportSizes.length;
+              
+              logTask7Result(
+                'Responsive behavior and canvas resizing',
+                allPassed,
+                `${resizeTestsPassed}/${viewportSizes.length} viewport sizes handled correctly`
+              );
+              
+              // Cleanup
+              root.unmount();
+              document.body.removeChild(container);
+              resolve(allPassed);
+            }
+          }, 150); // Wait for debounced resize
+        }, index * 200);
+      };
+      
+      viewportSizes.forEach(testResize);
+      
+    } catch (error) {
+      logTask7Result('Responsive behavior and canvas resizing', false, error.message);
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Test 5: Resource Cleanup and Memory Management
+ */
+function testTask7ResourceCleanup() {
+  return new Promise((resolve) => {
+    console.log('\n🧹 Testing Resource Cleanup and Memory Management...');
+    
+    try {
+      let webglContextLost = false;
+      let eventListenersRemoved = false;
+      
+      // Mock WebGL context lose
+      const originalGetContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function(type) {
+        if (type === 'webgl' || type === 'experimental-webgl') {
+          return {
+            getExtension: (name) => {
+              if (name === 'WEBGL_lose_context') {
+                return {
+                  loseContext: () => {
+                    webglContextLost = true;
+                  }
+                };
+              }
+              return null;
+            },
+            getParameter: () => 'Mock WebGL'
+          };
+        }
+        return originalGetContext.call(this, type);
+      };
+      
+      // Mock removeEventListener
+      const originalRemoveEventListener = window.removeEventListener;
+      window.removeEventListener = function(type, listener, options) {
+        if (type === 'resize') {
+          eventListenersRemoved = true;
+        }
+        return originalRemoveEventListener.call(this, type, listener, options);
+      };
+      
+      const container = document.createElement('div');
+      container.id = 'task7-cleanup-test';
+      container.style.cssText = 'position: fixed; top: -1000px; left: -1000px; width: 800px; height: 600px;';
+      document.body.appendChild(container);
+      
+      const root = ReactDOM.createRoot(container);
+      
+      const sceneWrapperElement = React.createElement(window.SceneWrapper, {
+        mode: 'cleanup-test',
+        sceneProps: { bgColor: '#112233' }
+      });
+      
+      root.render(sceneWrapperElement);
+      
+      setTimeout(() => {
+        // Unmount to trigger cleanup
+        root.unmount();
+        document.body.removeChild(container);
+        
+        setTimeout(() => {
+          // Restore original functions
+          HTMLCanvasElement.prototype.getContext = originalGetContext;
+          window.removeEventListener = originalRemoveEventListener;
+          
+          const cleanupComplete = webglContextLost && eventListenersRemoved;
+          
+          logTask7Result(
+            'Resource cleanup and memory management',
+            cleanupComplete,
+            cleanupComplete 
+              ? 'WebGL context disposed and event listeners removed properly'
+              : `Cleanup incomplete - WebGL: ${webglContextLost}, Events: ${eventListenersRemoved}`
+          );
+          
+          resolve(cleanupComplete);
+        }, 200);
+      }, 500);
+      
+    } catch (error) {
+      logTask7Result('Resource cleanup and memory management', false, error.message);
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Main test runner for Task 7
+ */
+async function runTask7FinalValidation() {
+  console.log(`\n🚀 Running ${TASK_7_TEST_CONFIG.testName}...`);
+  console.log('=' .repeat(80));
+  console.log('This test validates all requirements from Task 7:');
+  console.log('• Canvas initialization and Three.js context creation (Req 1.4)');
+  console.log('• Error boundary catches various Three.js failure scenarios (Req 3.5)');
+  console.log('• Performance with multiple rapid scene changes (Req 4.4)');
+  console.log('• Responsive behavior and canvas resizing (Req 4.2)');
+  console.log('• Proper resource cleanup and memory management (Req 1.5)');
+  console.log('=' .repeat(80));
+  
+  // Reset results
+  window.task7TestResults = {
+    passed: 0,
+    failed: 0,
+    errors: [],
+    startTime: performance.now(),
+    endTime: null
+  };
   
   try {
-    // Import the API handler
-    const { default: handler } = await import('../pages/api/modes.js');
+    // Check prerequisites
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+      console.error('❌ React or ReactDOM not available. Please ensure they are loaded.');
+      return false;
+    }
     
-    // Test 1: Basic API functionality
-    console.log('\n1. Testing basic API functionality...');
-    const req1 = createMockRequest('GET');
-    const res1 = createMockResponse();
+    if (typeof window.SceneWrapper === 'undefined') {
+      console.error('❌ SceneWrapper component not available. Please ensure it is loaded in global scope.');
+      return false;
+    }
     
-    await handler(req1, res1);
+    // Run all tests sequentially
+    await testTask7CanvasInitialization();
+    await testTask7ErrorBoundary();
+    await testTask7Performance();
+    await testTask7ResponsiveBehavior();
+    await testTask7ResourceCleanup();
     
-    if (res1.statusCode === 200 && Array.isArray(res1.responseData?.modes)) {
-      console.log('   ✅ Basic API call: PASS');
-      console.log(`      Status: ${res1.statusCode}`);
-      console.log(`      Modes found: ${res1.responseData.modesFound}`);
-      console.log(`      Processing time: ${res1.responseData.processingTimeMs}ms`);
-      testResults.push({ name: 'Basic API', passed: true });
+    // Calculate final results
+    window.task7TestResults.endTime = performance.now();
+    const totalTime = window.task7TestResults.endTime - window.task7TestResults.startTime;
+    
+    console.log('\n' + '=' .repeat(80));
+    console.log('📊 Task 7 Final Validation Results:');
+    console.log(`✅ Passed: ${window.task7TestResults.passed}`);
+    console.log(`❌ Failed: ${window.task7TestResults.failed}`);
+    console.log(`⏱️ Total Time: ${totalTime.toFixed(0)}ms`);
+    console.log(`📈 Success Rate: ${((window.task7TestResults.passed / (window.task7TestResults.passed + window.task7TestResults.failed)) * 100).toFixed(1)}%`);
+    
+    if (window.task7TestResults.errors.length > 0) {
+      console.log('\n🚨 Failed Tests:');
+      window.task7TestResults.errors.forEach(({ test, details }) => {
+        console.log(`   ${test}: ${details}`);
+      });
+    }
+    
+    if (window.task7TestResults.failed === 0) {
+      console.log('\n🎉 ALL TASK 7 REQUIREMENTS VALIDATED SUCCESSFULLY!');
+      console.log('✨ Complete Scene Wrapper Functionality Confirmed:');
+      console.log('   ✅ Canvas initialization and Three.js context creation working');
+      console.log('   ✅ Comprehensive error boundary handling all failure scenarios');
+      console.log('   ✅ Excellent performance with rapid scene changes and mode switching');
+      console.log('   ✅ Responsive behavior working across all tested screen sizes');
+      console.log('   ✅ Proper resource cleanup and memory management implemented');
+      console.log('\n🏆 Task 7 Implementation Complete and Fully Validated!');
+      console.log('🎯 All requirements from the specification have been met.');
     } else {
-      console.log('   ❌ Basic API call: FAIL');
-      console.log(`      Status: ${res1.statusCode}`);
-      console.log(`      Response: ${JSON.stringify(res1.responseData, null, 2)}`);
-      testResults.push({ name: 'Basic API', passed: false });
-      allTestsPassed = false;
+      console.log('\n⚠️  Some tests failed. Please review the implementation.');
+      console.log('📋 Requirements that need attention:');
+      window.task7TestResults.errors.forEach(({ test }) => {
+        console.log(`   • ${test}`);
+      });
     }
     
-    // Test 2: Response schema validation
-    console.log('\n2. Testing response schema validation...');
-    const response = res1.responseData;
-    const requiredFields = ['modes', 'timestamp', 'status', 'requestId', 'processingTimeMs', 'modesFound'];
-    let schemaValid = true;
+    console.log('=' .repeat(80));
     
-    for (const field of requiredFields) {
-      if (!(field in response)) {
-        console.log(`   ❌ Missing required field: ${field}`);
-        schemaValid = false;
-      }
-    }
-    
-    if (response.modes && response.modes.length > 0) {
-      const mode = response.modes[0];
-      const modeFields = ['id', 'name', 'popupStyle', 'minDelaySeconds', 'maxDelaySeconds', 'messageProbabilities', 'sceneProps'];
-      
-      for (const field of modeFields) {
-        if (!(field in mode)) {
-          console.log(`   ❌ Mode missing required field: ${field}`);
-          schemaValid = false;
-        }
-      }
-      
-      // Validate popup style
-      if (!['overlay', 'speechBubble'].includes(mode.popupStyle)) {
-        console.log(`   ❌ Invalid popupStyle: ${mode.popupStyle}`);
-        schemaValid = false;
-      }
-      
-      // Validate timing
-      if (mode.minDelaySeconds < 5 || mode.minDelaySeconds > 300) {
-        console.log(`   ❌ Invalid minDelaySeconds: ${mode.minDelaySeconds}`);
-        schemaValid = false;
-      }
-      
-      if (mode.maxDelaySeconds < 10 || mode.maxDelaySeconds > 600) {
-        console.log(`   ❌ Invalid maxDelaySeconds: ${mode.maxDelaySeconds}`);
-        schemaValid = false;
-      }
-      
-      if (mode.maxDelaySeconds <= mode.minDelaySeconds) {
-        console.log(`   ❌ maxDelaySeconds (${mode.maxDelaySeconds}) must be > minDelaySeconds (${mode.minDelaySeconds})`);
-        schemaValid = false;
-      }
-    }
-    
-    if (schemaValid) {
-      console.log('   ✅ Response schema: PASS');
-      testResults.push({ name: 'Response Schema', passed: true });
-    } else {
-      console.log('   ❌ Response schema: FAIL');
-      testResults.push({ name: 'Response Schema', passed: false });
-      allTestsPassed = false;
-    }
-    
-    // Test 3: HTTP headers validation
-    console.log('\n3. Testing HTTP headers...');
-    const expectedHeaders = ['Content-Type', 'Access-Control-Allow-Origin', 'Cache-Control'];
-    let headersValid = true;
-    
-    for (const header of expectedHeaders) {
-      if (!res1.headers[header]) {
-        console.log(`   ❌ Missing header: ${header}`);
-        headersValid = false;
-      }
-    }
-    
-    if (res1.headers['Content-Type'] && !res1.headers['Content-Type'].includes('application/json')) {
-      console.log(`   ❌ Invalid Content-Type: ${res1.headers['Content-Type']}`);
-      headersValid = false;
-    }
-    
-    if (headersValid) {
-      console.log('   ✅ HTTP headers: PASS');
-      console.log(`      Content-Type: ${res1.headers['Content-Type']}`);
-      console.log(`      CORS: ${res1.headers['Access-Control-Allow-Origin']}`);
-      testResults.push({ name: 'HTTP Headers', passed: true });
-    } else {
-      console.log('   ❌ HTTP headers: FAIL');
-      testResults.push({ name: 'HTTP Headers', passed: false });
-      allTestsPassed = false;
-    }
-    
-    // Test 4: Invalid HTTP methods
-    console.log('\n4. Testing invalid HTTP methods...');
-    const postReq = createMockRequest('POST');
-    const postRes = createMockResponse();
-    
-    await handler(postReq, postRes);
-    
-    if (postRes.statusCode === 405 && postRes.headers['Allow']) {
-      console.log('   ✅ POST method rejection: PASS');
-      console.log(`      Status: ${postRes.statusCode}`);
-      console.log(`      Allow header: ${postRes.headers['Allow']}`);
-      testResults.push({ name: 'Method Rejection', passed: true });
-    } else {
-      console.log('   ❌ POST method rejection: FAIL');
-      console.log(`      Status: ${postRes.statusCode}`);
-      testResults.push({ name: 'Method Rejection', passed: false });
-      allTestsPassed = false;
-    }
-    
-    // Test 5: OPTIONS request (CORS preflight)
-    console.log('\n5. Testing OPTIONS request...');
-    const optionsReq = createMockRequest('OPTIONS');
-    const optionsRes = createMockResponse();
-    
-    await handler(optionsReq, optionsRes);
-    
-    if (optionsRes.statusCode === 200 && optionsRes.ended) {
-      console.log('   ✅ OPTIONS request: PASS');
-      console.log(`      Status: ${optionsRes.statusCode}`);
-      testResults.push({ name: 'OPTIONS Request', passed: true });
-    } else {
-      console.log('   ❌ OPTIONS request: FAIL');
-      console.log(`      Status: ${optionsRes.statusCode}`);
-      console.log(`      Ended: ${optionsRes.ended}`);
-      testResults.push({ name: 'OPTIONS Request', passed: false });
-      allTestsPassed = false;
-    }
-    
-    // Test 6: Performance (caching)
-    console.log('\n6. Testing performance and caching...');
-    const start1 = Date.now();
-    const perfReq1 = createMockRequest('GET');
-    const perfRes1 = createMockResponse();
-    await handler(perfReq1, perfRes1);
-    const time1 = Date.now() - start1;
-    
-    const start2 = Date.now();
-    const perfReq2 = createMockRequest('GET');
-    const perfRes2 = createMockResponse();
-    await handler(perfReq2, perfRes2);
-    const time2 = Date.now() - start2;
-    
-    console.log(`      First request: ${time1}ms`);
-    console.log(`      Second request: ${time2}ms`);
-    
-    if (perfRes1.statusCode === 200 && perfRes2.statusCode === 200) {
-      console.log('   ✅ Performance test: PASS');
-      testResults.push({ name: 'Performance', passed: true });
-    } else {
-      console.log('   ❌ Performance test: FAIL');
-      testResults.push({ name: 'Performance', passed: false });
-      allTestsPassed = false;
-    }
-    
-    // Test 7: Cache status endpoint
-    console.log('\n7. Testing cache status endpoint...');
-    const cacheReq = createMockRequest('GET', { cacheStatus: 'true' });
-    const cacheRes = createMockResponse();
-    
-    await handler(cacheReq, cacheRes);
-    
-    if (cacheRes.statusCode === 200 && cacheRes.responseData?.stats) {
-      console.log('   ✅ Cache status: PASS');
-      console.log(`      Cache hits: ${cacheRes.responseData.stats.hits}`);
-      console.log(`      Cache misses: ${cacheRes.responseData.stats.misses}`);
-      testResults.push({ name: 'Cache Status', passed: true });
-    } else {
-      console.log('   ❌ Cache status: FAIL');
-      testResults.push({ name: 'Cache Status', passed: false });
-      allTestsPassed = false;
-    }
-    
-    // Test 8: Error handling with missing modes directory
-    console.log('\n8. Testing error handling with empty directory...');
-    
-    // First, invalidate cache to ensure fresh test
-    const invalidateReq = createMockRequest('GET', { invalidateCache: 'true' });
-    const invalidateRes = createMockResponse();
-    await handler(invalidateReq, invalidateRes);
-    
-    // Temporarily rename modes directory if it exists
-    const modesPath = path.join(process.cwd(), 'modes');
-    const backupPath = path.join(process.cwd(), 'modes_backup_test');
-    let dirMoved = false;
-    
-    try {
-      await fs.access(modesPath);
-      await fs.rename(modesPath, backupPath);
-      dirMoved = true;
-      console.log('      Moved modes directory for testing');
-    } catch (error) {
-      // Directory doesn't exist, that's fine for this test
-      console.log('      No modes directory exists (good for testing)');
-    }
-    
-    try {
-      const errorReq = createMockRequest('GET');
-      const errorRes = createMockResponse();
-      
-      await handler(errorReq, errorRes);
-      
-      if (errorRes.statusCode === 200 && 
-          Array.isArray(errorRes.responseData?.modes) && 
-          errorRes.responseData.modes.length === 0) {
-        console.log('   ✅ Empty directory handling: PASS');
-        console.log(`      Status: ${errorRes.statusCode}`);
-        console.log(`      Modes found: ${errorRes.responseData.modesFound}`);
-        testResults.push({ name: 'Error Handling', passed: true });
-      } else {
-        console.log('   ❌ Empty directory handling: FAIL');
-        console.log(`      Status: ${errorRes.statusCode}`);
-        console.log(`      Modes: ${errorRes.responseData?.modes?.length}`);
-        testResults.push({ name: 'Error Handling', passed: false });
-        allTestsPassed = false;
-      }
-    } finally {
-      // Restore directory if we moved it
-      if (dirMoved) {
-        try {
-          await fs.rename(backupPath, modesPath);
-          console.log('      Restored modes directory');
-        } catch (error) {
-          console.warn(`   ⚠️  Failed to restore modes directory: ${error.message}`);
-        }
-      }
-    }
-    
-    // Test 9: Invalid JSON handling
-    console.log('\n9. Testing invalid JSON handling...');
-    
-    // Invalidate cache again
-    const invalidateReq2 = createMockRequest('GET', { invalidateCache: 'true' });
-    const invalidateRes2 = createMockResponse();
-    await handler(invalidateReq2, invalidateRes2);
-    
-    const testModePath = path.join(process.cwd(), 'modes', 'test-invalid');
-    const testConfigPath = path.join(testModePath, 'config.json');
-    
-    try {
-      // Create test mode with invalid JSON
-      await fs.mkdir(testModePath, { recursive: true });
-      await fs.writeFile(testConfigPath, '{ "invalid": json }');
-      
-      const jsonReq = createMockRequest('GET');
-      const jsonRes = createMockResponse();
-      
-      await handler(jsonReq, jsonRes);
-      
-      // Should exclude invalid mode but include valid ones
-      const invalidMode = jsonRes.responseData?.modes?.find(m => m.id === 'test-invalid');
-      
-      if (jsonRes.statusCode === 200 && !invalidMode) {
-        console.log('   ✅ Invalid JSON handling: PASS');
-        console.log(`      Status: ${jsonRes.statusCode}`);
-        console.log(`      Invalid mode excluded: Yes`);
-        console.log(`      Valid modes found: ${jsonRes.responseData.modesFound}`);
-        testResults.push({ name: 'Invalid JSON', passed: true });
-      } else {
-        console.log('   ❌ Invalid JSON handling: FAIL');
-        console.log(`      Status: ${jsonRes.statusCode}`);
-        console.log(`      Invalid mode excluded: ${!invalidMode ? 'Yes' : 'No'}`);
-        testResults.push({ name: 'Invalid JSON', passed: false });
-        allTestsPassed = false;
-      }
-      
-    } finally {
-      // Clean up test mode
-      try {
-        await fs.rm(testModePath, { recursive: true, force: true });
-      } catch (error) {
-        // Ignore cleanup errors
-      }
-    }
-    
-    // Test 10: Missing config.json handling
-    console.log('\n10. Testing missing config.json handling...');
-    
-    // Invalidate cache again
-    const invalidateReq3 = createMockRequest('GET', { invalidateCache: 'true' });
-    const invalidateRes3 = createMockResponse();
-    await handler(invalidateReq3, invalidateRes3);
-    
-    const testModePathMissing = path.join(process.cwd(), 'modes', 'test-missing');
-    
-    try {
-      // Create test mode directory without config.json
-      await fs.mkdir(testModePathMissing, { recursive: true });
-      
-      const missingReq = createMockRequest('GET');
-      const missingRes = createMockResponse();
-      
-      await handler(missingReq, missingRes);
-      
-      // Should exclude mode without config but include valid ones
-      const missingMode = missingRes.responseData?.modes?.find(m => m.id === 'test-missing');
-      
-      if (missingRes.statusCode === 200 && !missingMode) {
-        console.log('   ✅ Missing config handling: PASS');
-        console.log(`      Status: ${missingRes.statusCode}`);
-        console.log(`      Missing config mode excluded: Yes`);
-        console.log(`      Valid modes found: ${missingRes.responseData.modesFound}`);
-        testResults.push({ name: 'Missing Config', passed: true });
-      } else {
-        console.log('   ❌ Missing config handling: FAIL');
-        console.log(`      Status: ${missingRes.statusCode}`);
-        console.log(`      Missing config mode excluded: ${!missingMode ? 'Yes' : 'No'}`);
-        testResults.push({ name: 'Missing Config', passed: false });
-        allTestsPassed = false;
-      }
-      
-    } finally {
-      // Clean up test mode
-      try {
-        await fs.rm(testModePathMissing, { recursive: true, force: true });
-      } catch (error) {
-        // Ignore cleanup errors
-      }
-    }
-    
-    // Summary
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 TASK 7 TEST SUMMARY');
-    console.log('='.repeat(60));
-    
-    const totalTests = testResults.length;
-    const passedTests = testResults.filter(t => t.passed).length;
-    const failedTests = totalTests - passedTests;
-    
-    console.log(`\n📈 Results:`);
-    console.log(`   Total Tests: ${totalTests}`);
-    console.log(`   Passed: ${passedTests} ✅`);
-    console.log(`   Failed: ${failedTests} ${failedTests > 0 ? '❌' : '✅'}`);
-    console.log(`   Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`);
-    
-    if (failedTests > 0) {
-      console.log(`\n❌ Failed Tests:`);
-      testResults
-        .filter(t => !t.passed)
-        .forEach(test => console.log(`   • ${test.name}`));
-    }
-    
-    console.log(`\n✅ Requirements Coverage:`);
-    console.log(`   • Empty modes directory handling: ${testResults.find(t => t.name === 'Error Handling')?.passed ? 'PASS' : 'FAIL'}`);
-    console.log(`   • Response format validation: ${testResults.find(t => t.name === 'Response Schema')?.passed ? 'PASS' : 'FAIL'}`);
-    console.log(`   • Error scenarios (missing files): ${testResults.find(t => t.name === 'Missing Config')?.passed ? 'PASS' : 'FAIL'}`);
-    console.log(`   • Error scenarios (invalid JSON): ${testResults.find(t => t.name === 'Invalid JSON')?.passed ? 'PASS' : 'FAIL'}`);
-    console.log(`   • Performance benchmarks and caching: ${testResults.find(t => t.name === 'Performance')?.passed ? 'PASS' : 'FAIL'}`);
-    console.log(`   • Development and production compatibility: ${testResults.find(t => t.name === 'Basic API')?.passed ? 'PASS' : 'FAIL'}`);
-    
-    console.log(`\n${allTestsPassed ? '🎉' : '⚠️'} Task 7 Implementation: ${allTestsPassed ? 'COMPLETE AND VALIDATED' : 'NEEDS ATTENTION'}`);
-    
-    if (allTestsPassed) {
-      console.log('\nThe API endpoint successfully provides:');
-      console.log('  ✓ Graceful handling of empty modes directory');
-      console.log('  ✓ Proper response format matching established schema');
-      console.log('  ✓ Robust error handling for missing files and invalid JSON');
-      console.log('  ✓ Performance optimization with caching system');
-      console.log('  ✓ Correct HTTP method handling and CORS support');
-      console.log('  ✓ Configuration validation and sanitization');
-      console.log('  ✓ Compatible with both development and production builds');
-    }
-    
-    return allTestsPassed;
+    return window.task7TestResults.failed === 0;
     
   } catch (error) {
-    console.error('\n❌ Test execution failed:', error.message);
-    console.error(error.stack);
+    console.error('❌ Task 7 final validation failed:', error);
     return false;
   }
 }
 
-// Run the tests
-runTask7Tests()
-  .then(success => {
-    process.exit(success ? 0 : 1);
-  })
-  .catch(error => {
-    console.error('❌ Test runner failed:', error.message);
-    process.exit(1);
-  });
+// Export for browser use
+if (typeof window !== 'undefined') {
+  window.runTask7FinalValidation = runTask7FinalValidation;
+  console.log('Task 7 Final Validation loaded. Call runTask7FinalValidation() to execute tests.');
+}
+
+// Export for module use
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { runTask7FinalValidation };
+}

@@ -103,9 +103,31 @@ inclusion: always
 - **Examples**: `01-project-scaffold.spec.yaml`, `09-basic-modes.spec.yaml`
 
 ## Development Principles
-- Each spec should be completable in 1-2 hours
+
 - Every spec includes testing/validation steps
 - Build incrementally - each spec depends on previous ones
 - Reference sitemap.md for exact file locations
 - Follow steering document patterns consistently
 - Test thoroughly before moving to next spec
+
+
+📋 Complete Spec Development System
+14 Individual Specs organized in 5 phases:
+
+Foundation (3 specs) - Project setup, data, API
+Core Components (4 specs) - UI building blocks
+Mode System (3 specs) - Personality implementation
+Enhancement (2 specs) - Polish and advanced features
+Testing & Deployment (2 specs) - Validation and launch prep
+🎯 How to Proceed
+Open the MASTER-SPEC-GUIDE.md - This contains all 14 prompts ready to copy/paste
+Start with Spec 1 - Copy the exact prompt for 01-project-scaffold.spec.yaml
+Create each spec in order - Each builds on the previous ones
+Reference the steering files - They're automatically included in prompts
+Test after each spec - Validation steps are included
+🏗️ What Each Spec Builds
+Specs 1-3: Get a working Next.js app with data and API
+Specs 4-7: Build all the UI components and interactions
+Specs 8-10: Implement the complete personality mode system
+Specs 11-12: Polish the experience and add advanced features
+Specs 13-14: Test everything and prepare for hackathon submission

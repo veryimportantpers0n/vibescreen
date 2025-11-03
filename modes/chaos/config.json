@@ -1,6 +1,8 @@
 {
   "name": "Chaos",
   "popupStyle": "overlay",
+  "popupPosition": "overlay",
+  "animationType": "glitchy",
   "minDelaySeconds": 5,
   "maxDelaySeconds": 15,
   "messageProbabilities": {

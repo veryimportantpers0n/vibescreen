@@ -1,6 +1,8 @@
 {
   "name": "Corporate AI",
   "popupStyle": "overlay",
+  "popupPosition": "overlay",
+  "animationType": "normal",
   "minDelaySeconds": 12,
   "maxDelaySeconds": 45,
   "messageProbabilities": {

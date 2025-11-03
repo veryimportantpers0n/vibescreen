@@ -1,6 +1,8 @@
 {
   "name": "Zen Monk",
   "popupStyle": "speechBubble",
+  "popupPosition": "left",
+  "animationType": "normal",
   "minDelaySeconds": 20,
   "maxDelaySeconds": 60,
   "messageProbabilities": {

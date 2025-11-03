@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import '../styles/globals.css';
+import '../styles/modeThemes.css';
+import '../styles/animations.css';
+import '../styles/terminal-animations.css';
 
 // Error Boundary Component for Development
 class ErrorBoundary extends React.Component {
