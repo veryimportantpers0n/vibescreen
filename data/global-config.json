@@ -1,0 +1,52 @@
+{
+  "defaultMinDelaySeconds": 15,
+  "defaultMaxDelaySeconds": 45,
+  "defaultPopupStyle": "overlay",
+  "animationSpeedMultiplier": 1.0,
+  "messageCategories": {
+    "cliche": {
+      "weight": 0.6,
+      "description": "Standard AI responses"
+    },
+    "exaggeration": {
+      "weight": 0.2,
+      "description": "Humorous AI lines"
+    },
+    "other": {
+      "weight": 0.2,
+      "description": "Neutral variations"
+    }
+  },
+  "accessibility": {
+    "reducedMotion": false,
+    "highContrast": false,
+    "messageLifespanMultiplier": 1.0
+  },
+  "userPreferences": {
+    "enableSounds": true,
+    "enableAnimations": true,
+    "preferredTheme": "matrix-green",
+    "autoHideTerminal": true,
+    "terminalAutoHideDelay": 2000
+  },
+  "validation": {
+    "minDelayRange": {
+      "min": 5,
+      "max": 300
+    },
+    "maxDelayRange": {
+      "min": 10,
+      "max": 600
+    },
+    "animationSpeedRange": {
+      "min": 0.1,
+      "max": 5.0
+    },
+    "messageLifespanRange": {
+      "min": 0.5,
+      "max": 3.0
+    },
+    "allowedPopupStyles": ["overlay", "speechBubble"],
+    "allowedThemes": ["matrix-green", "amber", "blue", "red"]
+  }
+}

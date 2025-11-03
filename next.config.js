@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static export for deployment flexibility
-  output: 'export',
+  // Enable static export only for production builds (API routes need server in dev)
+  ...(process.env.NODE_ENV === 'production' && { output: 'export' }),
   trailingSlash: true,
   
   // Image optimization settings
@@ -85,4 +85,4 @@ const nextConfig = {
   }),
 };
 
-module.exports = nextConfig;
+export default nextConfig;

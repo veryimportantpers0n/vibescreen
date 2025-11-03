@@ -2,6 +2,7 @@
   "name": "vibescreen",
   "version": "1.0.0",
   "description": "Ambient AI companion for second monitors - A Kiroween hackathon submission",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
