@@ -252,28 +252,11 @@ class CommandExecutor {
         };
       }
 
-      // Validate character exists (only the three implemented modes)
-      const validCharacters = [
-        'corporate-ai', 'zen-monk', 'chaos'
-      ];
-
-      if (!validCharacters.includes(data.character)) {
-        return {
-          success: false,
-          message: `Invalid character: ${data.character}`,
-          suggestion: 'Type !characters to see available options'
-        };
-      }
-
       // Execute character switch through callback
       if (this.onCharacterSwitch) {
-        // Create mode object that matches ModeSelector expectations
-        const modeObject = {
-          id: data.character,
-          name: data.displayName || this.formatCharacterName(data.character)
-        };
-        
-        await this.onCharacterSwitch(modeObject);
+        // Pass the character data directly to the switch controller
+        // The controller will handle validation and mode mapping
+        await this.onCharacterSwitch(data.character);
       }
 
       // Update system state cache

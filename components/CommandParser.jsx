@@ -6,26 +6,54 @@ import React from 'react';
  */
 class CommandParser {
   constructor() {
-    // Character name mapping for the three implemented modes
+    // Character name mapping for all available modes
     this.characterNameMap = {
       // Full names (primary)
       'corporate ai': 'corporate-ai',
       'zen monk': 'zen-monk',
       'chaos': 'chaos',
+      'emotional damage': 'emotional-damage',
+      'therapist': 'therapist',
+      'startup founder': 'startup-founder',
+      'doomsday prophet': 'doomsday-prophet',
+      'gamer rage': 'gamer-rage',
+      'influencer': 'influencer',
+      'wholesome grandma': 'wholesome-grandma',
+      'spooky': 'spooky',
       
       // Partial matches (fallback)
       'corp': 'corporate-ai',
       'corporate': 'corporate-ai',
       'ai': 'corporate-ai',
       'zen': 'zen-monk',
-      'monk': 'zen-monk'
+      'monk': 'zen-monk',
+      'emotional': 'emotional-damage',
+      'damage': 'emotional-damage',
+      'therapy': 'therapist',
+      'startup': 'startup-founder',
+      'founder': 'startup-founder',
+      'doomsday': 'doomsday-prophet',
+      'prophet': 'doomsday-prophet',
+      'gamer': 'gamer-rage',
+      'rage': 'gamer-rage',
+      'influence': 'influencer',
+      'grandma': 'wholesome-grandma',
+      'wholesome': 'wholesome-grandma'
     };
 
-    // Display names for the three implemented characters
+    // Display names for all available characters
     this.characterDisplayNames = {
       'corporate-ai': 'Corporate AI',
       'zen-monk': 'Zen Monk',
-      'chaos': 'Chaos'
+      'chaos': 'Chaos',
+      'emotional-damage': 'Emotional Damage',
+      'therapist': 'Therapist',
+      'startup-founder': 'Startup Founder',
+      'doomsday-prophet': 'Doomsday Prophet',
+      'gamer-rage': 'Gamer Rage',
+      'influencer': 'Influencer',
+      'wholesome-grandma': 'Wholesome Grandma',
+      'spooky': 'Spooky'
     };
 
     // Command registry with patterns and handlers
@@ -712,12 +740,28 @@ Type any command to get started!`;
   handleStatus(args, context) {
     const currentChar = context.currentCharacter || 'Corporate AI';
     const messageStatus = context.messageStatus || 'Active';
+    const loadingState = context.loadingState || 'Ready';
+    const modeLoaderStats = context.modeLoaderStats || {};
     
-    const statusText = `Current Status:
+    let statusText = `Current Status:
 Character: ${currentChar}
 Messages: ${messageStatus}
+Loading: ${loadingState}
 Terminal: Active
 System: Online`;
+
+    // Add mode loader performance stats if available
+    if (modeLoaderStats.cacheStats) {
+      statusText += `\n\nMode Loader Stats:
+Cache Size: ${modeLoaderStats.cacheStats.size}/${modeLoaderStats.cacheStats.maxSize}
+Hit Rate: ${modeLoaderStats.cacheStats.hitRate}
+Memory: ${modeLoaderStats.cacheStats.estimatedMemoryKB}KB`;
+    }
+
+    if (modeLoaderStats.performanceStats) {
+      statusText += `\nRecent Switches: ${modeLoaderStats.performanceStats.recentSwitches}
+Avg Switch Time: ${modeLoaderStats.performanceStats.avgCachedSwitchTime}ms`;
+    }
 
     return {
       success: true,

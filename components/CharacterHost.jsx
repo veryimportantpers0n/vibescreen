@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Canvas } from '@react-three/fiber';
+import { threeJSResourceManager } from '../utils/resourceCleanup';
 
 /**
  * CharacterHost - Manages and positions animated characters in bottom-right corner
@@ -101,11 +102,13 @@ const CharacterHost = ({
   }, [updateCanvasSize]);
 
   /**
-   * Cleanup on unmount
+   * Enhanced cleanup on unmount with resource management
    */
   useEffect(() => {
     return () => {
       mountedRef.current = false;
+      
+      console.log('🧹 Starting CharacterHost cleanup...');
       
       // Clear animation timeout
       if (animationTimeoutRef.current) {
@@ -117,22 +120,22 @@ const CharacterHost = ({
         clearTimeout(resizeTimeoutRef.current);
       }
       
+      // Cleanup Three.js resources for this character
+      if (currentMode) {
+        threeJSResourceManager.disposeModeResources(`character-${currentMode}`);
+      }
+      
       // Cleanup WebGL context if needed
       if (canvasRef.current) {
         const canvas = canvasRef.current;
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         
-        if (gl) {
-          const loseContext = gl.getExtension('WEBGL_lose_context');
-          if (loseContext) {
-            loseContext.loseContext();
-          }
-        }
+        // Force lose WebGL context for proper cleanup
+        threeJSResourceManager.loseWebGLContext(canvas);
       }
       
-      console.log('🧹 CharacterHost cleanup completed');
+      console.log('✅ CharacterHost cleanup completed');
     };
-  }, []);
+  }, [currentMode]);
 
   /**
    * Error boundary for character rendering
@@ -168,7 +171,7 @@ const CharacterHost = ({
     dpr: Math.min(window.devicePixelRatio || 1, 2),
     frameloop: "always",
     resize: { scroll: false, debounce: { scroll: 50, resize: 100 } },
-    onCreated: ({ gl, scene, camera }) => {
+    onCreated: ({ gl, camera }) => {
       // Configure renderer for character display
       gl.setClearColor('#000000', 0); // Transparent background
       gl.shadowMap.enabled = false; // Disable shadows for better performance
@@ -177,8 +180,19 @@ const CharacterHost = ({
       camera.position.set(0, 0, 3);
       camera.lookAt(0, 0, 0);
       
+      // Register WebGL context for tracking
+      const contextId = `character-${currentMode}-${Date.now()}`;
+      threeJSResourceManager.registerWebGLContext(gl.domElement, contextId);
+      
+      // Track renderer resource
+      threeJSResourceManager.trackResource(
+        `character-renderer-${currentMode}`,
+        gl,
+        'renderer'
+      );
+      
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🎭 Character renderer initialized for ${currentMode}`);
+        console.log(`🎭 Character renderer initialized for ${currentMode} (context: ${contextId})`);
       }
     },
     onError: handleCharacterError

@@ -9,7 +9,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "next build && next export"
+    "export": "next build && next export",
+    "logs": "node scripts/check-logs.js",
+    "logs:today": "node scripts/check-logs.js today",
+    "logs:modes": "node scripts/check-logs.js modes",
+    "logs:perf": "node scripts/check-logs.js performance",
+    "logs:crashes": "node scripts/check-logs.js crashes",
+    "logs:sample": "node tests/utils/generateSampleLogs.js",
+    "test:logs": "node tests/validation/fileLoggingTest.js"
   },
   "dependencies": {
     "@react-three/drei": "^9.88.0",

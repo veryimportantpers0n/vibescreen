@@ -1,9 +1,10 @@
 import { useAppContext } from './_app';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ModeLoader from '../components/ModeLoader';
 import CharacterHost from '../components/CharacterHost';
 import TerminalInterface from '../components/TerminalInterface';
 import MessageController from '../components/MessageController';
+import ModeSwitchControllerComponent from '../components/ModeSwitchController';
 
 export default function Home() {
   const { currentMode, globalConfig, setCurrentMode, messagesPaused, setMessagesPaused } = useAppContext();
@@ -11,6 +12,9 @@ export default function Home() {
   const [modeComponents, setModeComponents] = useState({});
   const [modeConfig, setModeConfig] = useState({});
   const [speakTrigger, setSpeakTrigger] = useState(0);
+  const [loadingState, setLoadingState] = useState('Ready');
+  const modeLoaderRef = useRef(null);
+  const switchControllerRef = useRef(null);
 
   // Ensure component is mounted before rendering to prevent hydration issues
   useEffect(() => {
@@ -48,13 +52,27 @@ export default function Home() {
     setSpeakTrigger(prev => prev + 1);
   };
 
-  // Handle character switching from terminal
-  const handleCharacterSwitch = (modeObject) => {
-    console.log('🔄 Character switch requested:', modeObject);
-    if (modeObject && modeObject.id) {
-      setCurrentMode(modeObject.id);
-    } else if (typeof modeObject === 'string') {
-      setCurrentMode(modeObject);
+  // Handle character switching from terminal via ModeSwitchController
+  const handleCharacterSwitch = async (characterInput) => {
+    console.log('🔄 Character switch requested:', characterInput);
+    
+    if (switchControllerRef.current) {
+      try {
+        const result = await switchControllerRef.current.handleCharacterSwitch(characterInput);
+        console.log('✅ Character switch result:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Character switch failed:', error);
+        throw error;
+      }
+    } else {
+      // Fallback to direct mode change if controller not available
+      console.warn('⚠️ ModeSwitchController not available, using fallback');
+      if (typeof characterInput === 'string') {
+        setCurrentMode(characterInput);
+      } else if (characterInput && characterInput.id) {
+        setCurrentMode(characterInput.id);
+      }
     }
   };
 
@@ -77,12 +95,23 @@ export default function Home() {
   };
 
   // Get current application state for terminal
-  const getCurrentState = () => ({
-    currentCharacter: currentMode || 'Corporate AI',
-    messageStatus: messagesPaused ? 'Paused' : 'Active',
-    terminalVisible: true,
-    globalConfig
-  });
+  const getCurrentState = () => {
+    const baseState = {
+      currentCharacter: currentMode || 'Corporate AI',
+      messageStatus: messagesPaused ? 'Paused' : 'Active',
+      loadingState: loadingState,
+      terminalVisible: true,
+      globalConfig
+    };
+
+    // Add ModeLoader stats if available
+    if (switchControllerRef.current) {
+      const status = switchControllerRef.current.getStatus();
+      baseState.modeLoaderStats = status.modeLoaderStats;
+    }
+
+    return baseState;
+  };
 
   if (!mounted) {
     return (
@@ -96,12 +125,27 @@ export default function Home() {
   }
 
   return (
-    <div className="homepage" role="application" aria-label="VibeScreen Ambient AI Companion">
-      {/* Skip to main content link for accessibility */}
-      <a href="#main-content" className="skip-link">Skip to main content</a>
-      
-      {/* Main Content Area */}
-      <main id="main-content" className="main-content" role="main">
+    <ModeSwitchControllerComponent
+      initialMode={currentMode}
+      onModeChange={setCurrentMode}
+      onLoadingStateChange={setLoadingState}
+      onError={handleModeError}
+      getCurrentModeData={() => ({
+        components: modeComponents[currentMode],
+        config: modeConfig[currentMode]
+      })}
+    >
+      {(switchController) => {
+        // Store controller reference for use in other handlers
+        switchControllerRef.current = switchController;
+
+        return (
+          <div className="homepage" role="application" aria-label="VibeScreen Ambient AI Companion">
+            {/* Skip to main content link for accessibility */}
+            <a href="#main-content" className="skip-link">Skip to main content</a>
+            
+            {/* Main Content Area */}
+            <main id="main-content" className="main-content" role="main">
         {/* Header Section */}
         <header className="app-header" role="banner">
           <h1 className="app-title" id="app-title">VibeScreen</h1>
@@ -113,52 +157,59 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Scene Container - Real Three.js scenes */}
-        <section 
-          className="scene-container" 
-          id="scene-container"
-          role="img"
-          aria-label="3D background scene area"
-          aria-describedby="scene-status"
-        >
-          <ModeLoader
-            currentMode={currentMode}
-            onModeChange={handleModeChange}
-            onModeLoaded={handleModeLoaded}
-            onError={handleModeError}
-          />
-          <div className="sr-only" id="scene-status" aria-live="polite">
-            Current Mode: {currentMode || 'Loading...'}
-          </div>
-        </section>
+            {/* Scene Container - Real Three.js scenes */}
+            <section 
+              className="scene-container" 
+              id="scene-container"
+              role="img"
+              aria-label="3D background scene area"
+              aria-describedby="scene-status"
+            >
+              <ModeLoader
+                ref={(ref) => {
+                  modeLoaderRef.current = ref;
+                  // Connect ModeLoader to switch controller
+                  if (switchController && ref) {
+                    switchController.setModeLoaderRef(ref);
+                  }
+                }}
+                currentMode={currentMode}
+                onModeChange={handleModeChange}
+                onModeLoaded={handleModeLoaded}
+                onError={handleModeError}
+              />
+              <div className="sr-only" id="scene-status" aria-live="polite">
+                Current Mode: {currentMode || 'Loading...'} - Status: {loadingState}
+              </div>
+            </section>
 
-        {/* Character Host Area - Bottom Right */}
-        <CharacterHost
-          currentMode={currentMode}
-          characterComponent={modeComponents[currentMode]?.character}
-          config={modeConfig[currentMode]}
-          onSpeak={speakTrigger}
-          onError={handleModeError}
-        />
+            {/* Character Host Area - Bottom Right */}
+            <CharacterHost
+              currentMode={currentMode}
+              characterComponent={modeComponents[currentMode]?.character}
+              config={modeConfig[currentMode]}
+              onSpeak={speakTrigger}
+              onError={handleModeError}
+            />
 
-        {/* Message System */}
-        <MessageController
-          currentMode={currentMode}
-          globalConfig={globalConfig}
-          isPaused={messagesPaused}
-          onError={handleModeError}
-          characterPosition={{ x: typeof window !== 'undefined' ? window.innerWidth - 120 : 1200, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 }}
-        />
+            {/* Message System */}
+            <MessageController
+              currentMode={currentMode}
+              globalConfig={globalConfig}
+              isPaused={messagesPaused}
+              onError={handleModeError}
+              characterPosition={{ x: typeof window !== 'undefined' ? window.innerWidth - 120 : 1200, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 }}
+            />
 
-        {/* Terminal Interface - Bottom Left */}
-        <TerminalInterface
-          onCharacterSwitch={handleCharacterSwitch}
-          onMessageControl={handleMessageControl}
-          currentCharacter={currentMode}
-          messageStatus={messagesPaused ? 'Paused' : 'Active'}
-          getCurrentState={getCurrentState}
-          onError={handleModeError}
-        />
+            {/* Terminal Interface - Bottom Left */}
+            <TerminalInterface
+              onCharacterSwitch={handleCharacterSwitch}
+              onMessageControl={handleMessageControl}
+              currentCharacter={switchController.currentMode}
+              messageStatus={messagesPaused ? 'Paused' : 'Active'}
+              getCurrentState={getCurrentState}
+              onError={handleModeError}
+            />
 
         {/* Mode Selector Placeholder - Bottom Navigation */}
         <nav 
@@ -240,31 +291,39 @@ export default function Home() {
         </aside>
 
 
-      </main>
+            </main>
 
-      {/* Development Info Panel */}
-      {process.env.NODE_ENV === 'development' && (
-        <aside 
-          className="dev-info"
-          role="complementary"
-          aria-label="Development information"
-        >
-          <h3>Development Status</h3>
-          <ul role="list">
-            <li>✅ Next.js App Structure</li>
-            <li>✅ Global State Management</li>
-            <li>✅ Error Boundary</li>
-            <li>⏳ Three.js Scene Wrapper</li>
-            <li>⏳ Mode Loader System</li>
-            <li>⏳ Terminal Interface</li>
-            <li>⏳ Message System</li>
-          </ul>
-          <div className="config-display">
-            <strong>Global Config:</strong>
-            <pre aria-label="Global configuration data">{JSON.stringify(globalConfig, null, 2)}</pre>
+            {/* Development Info Panel */}
+            {process.env.NODE_ENV === 'development' && (
+              <aside 
+                className="dev-info"
+                role="complementary"
+                aria-label="Development information"
+              >
+                <h3>Development Status</h3>
+                <ul role="list">
+                  <li>✅ Next.js App Structure</li>
+                  <li>✅ Global State Management</li>
+                  <li>✅ Error Boundary</li>
+                  <li>✅ Three.js Scene Wrapper</li>
+                  <li>✅ Mode Loader System</li>
+                  <li>✅ Terminal Interface</li>
+                  <li>✅ Mode Switch Controller</li>
+                  <li>✅ Message System</li>
+                </ul>
+                <div className="config-display">
+                  <strong>Switch Controller Status:</strong>
+                  <pre aria-label="Switch controller status">{JSON.stringify(switchController.getStatus(), null, 2)}</pre>
+                </div>
+                <div className="config-display">
+                  <strong>Global Config:</strong>
+                  <pre aria-label="Global configuration data">{JSON.stringify(globalConfig, null, 2)}</pre>
+                </div>
+              </aside>
+            )}
           </div>
-        </aside>
-      )}
-    </div>
+        );
+      }}
+    </ModeSwitchControllerComponent>
   );
 }
