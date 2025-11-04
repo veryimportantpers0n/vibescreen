@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 import { MessagePopupContainer } from './MessagePopup';
 import { useMessageScheduler } from '../utils/useMessageScheduler';
 
-const MessageController = ({
+const MessageController = React.forwardRef(({
   currentMode,
   globalConfig = {},
   characterPosition = { x: window.innerWidth - 120, y: window.innerHeight - 120 },
@@ -18,7 +18,7 @@ const MessageController = ({
   onStatusChange,
   className = '',
   testId = 'message-controller'
-}) => {
+}, ref) => {
   const [characterPos, setCharacterPos] = useState(characterPosition);
 
   // Initialize message scheduler
@@ -95,7 +95,7 @@ const MessageController = ({
   }, [characterPosition]);
 
   // Expose control methods via ref (for parent components)
-  React.useImperativeHandle(React.forwardRef((props, ref) => ({
+  React.useImperativeHandle(ref, () => ({
     pause,
     resume,
     togglePause,
@@ -105,7 +105,7 @@ const MessageController = ({
     getStatus: () => schedulerStatus,
     isRunning,
     isPaused
-  })), [pause, resume, togglePause, testPopup, clearMessages, stop, schedulerStatus, isRunning, isPaused]);
+  }), [pause, resume, togglePause, testPopup, clearMessages, stop, schedulerStatus, isRunning, isPaused]);
 
   // Handle errors
   if (error) {
@@ -177,7 +177,7 @@ const MessageController = ({
       </div>
     </div>
   );
-};
+});
 
 /**
  * MessageControllerProvider Component

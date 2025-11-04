@@ -1,0 +1,787 @@
+/* Terminal Interface Styles - CSS Module */
+
+/* Terminal Trigger Area */
+.terminalTrigger {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 40px;
+  height: 30px;
+  background: var(--terminal-bg);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 199;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.terminalTrigger:hover {
+  opacity: 1;
+  box-shadow: 0 0 10px var(--phosphor-glow);
+  border-color: var(--matrix-green);
+}
+
+.triggerIcon {
+  color: var(--matrix-green);
+  font-family: var(--font-terminal);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Terminal Container */
+.terminalContainer {
+  position: fixed;
+  bottom: 60px;
+  left: 20px;
+  width: 400px;
+  max-height: 200px;
+  background: var(--terminal-bg);
+  border: 2px solid var(--matrix-green);
+  border-radius: 4px;
+  font-family: var(--font-terminal);
+  font-size: 12px;
+  color: var(--matrix-green);
+  box-shadow: 0 0 20px var(--phosphor-glow);
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+
+.terminalContainer.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+/* Terminal Header */
+.terminalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--matrix-green-darker);
+  border-bottom: 1px solid var(--matrix-green);
+  border-radius: 2px 2px 0 0;
+}
+
+.terminalTitle {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--matrix-green);
+}
+
+.terminalControls {
+  display: flex;
+  gap: 4px;
+}
+
+.controlDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--matrix-green-dark);
+  border: 1px solid var(--matrix-green);
+}
+
+/* Terminal Content */
+.terminalContent {
+  padding: 12px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+/* Custom scrollbar for terminal */
+.terminalContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminalContent::-webkit-scrollbar-track {
+  background: var(--matrix-green-darker);
+}
+
+.terminalContent::-webkit-scrollbar-thumb {
+  background: var(--matrix-green-dark);
+  border-radius: 3px;
+}
+
+.terminalContent::-webkit-scrollbar-thumb:hover {
+  background: var(--matrix-green);
+}
+
+/* Welcome Message */
+.terminalWelcome {
+  margin-bottom: 12px;
+}
+
+.welcomeLine {
+  line-height: 1.4;
+  margin-bottom: 2px;
+  color: var(--matrix-green-dark);
+  font-size: 11px;
+}
+
+.welcomeLine:first-child {
+  color: var(--matrix-green);
+  font-weight: bold;
+}
+
+/* Terminal History */
+.terminalHistory {
+  margin-bottom: 12px;
+  max-height: 100px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Smooth scrolling for history */
+.terminalHistory {
+  scroll-behavior: smooth;
+}
+
+.historyEntry {
+  line-height: 1.4;
+  margin-bottom: 2px;
+  font-size: 11px;
+  word-wrap: break-word;
+}
+
+.historyEntry.command {
+  color: var(--matrix-green);
+  font-weight: bold;
+}
+
+.historyEntry.response {
+  color: var(--matrix-green-dark);
+  margin-left: 12px;
+  white-space: pre-line;
+}
+
+.historyEntry.success {
+  color: var(--matrix-green);
+  margin-left: 12px;
+  white-space: pre-line;
+  font-weight: bold;
+}
+
+.historyEntry.info {
+  color: var(--matrix-green-dark);
+  margin-left: 12px;
+  white-space: pre-line;
+}
+
+.historyEntry.warning {
+  color: #ffcc00;
+  margin-left: 12px;
+  white-space: pre-line;
+}
+
+.historyEntry.error {
+  color: #ff6b6b;
+  margin-left: 12px;
+  white-space: pre-line;
+  font-weight: bold;
+}
+
+.historyEntry.suggestion {
+  color: #ffa500;
+  margin-left: 12px;
+  font-style: italic;
+  white-space: pre-line;
+}
+
+.entryContent {
+  display: inline;
+}
+
+/* Terminal Prompt */
+.terminalPrompt {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.promptSymbol {
+  color: var(--matrix-green);
+  font-weight: bold;
+  margin-right: 8px;
+  user-select: none;
+}
+
+.terminalInput {
+  background: transparent;
+  border: none;
+  color: var(--matrix-green);
+  font-family: var(--font-terminal);
+  font-size: 12px;
+  flex: 1;
+  outline: none;
+  padding: 0;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+}
+
+.terminalInput::placeholder {
+  color: var(--matrix-green-dark);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.terminalInput:focus {
+  background: rgba(0, 255, 0, 0.02);
+  text-shadow: 0 0 2px var(--matrix-green);
+}
+
+.terminalInput:focus::placeholder {
+  opacity: 0.3;
+}
+
+/* Enhanced Blinking Cursor */
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--matrix-green);
+  margin-left: 2px;
+  animation: cursor-blink 1s infinite;
+  box-shadow: 0 0 3px var(--phosphor-glow);
+}
+
+@keyframes cursor-blink {
+  0%, 45% {
+    opacity: 1;
+    background: var(--matrix-green);
+    box-shadow: 0 0 5px var(--phosphor-glow);
+  }
+  50%, 95% {
+    opacity: 0.3;
+    background: var(--matrix-green-dark);
+    box-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    background: var(--matrix-green);
+    box-shadow: 0 0 5px var(--phosphor-glow);
+  }
+}
+
+/* Phosphor Glow Effect */
+.terminalContainer::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--phosphor-glow), transparent, var(--phosphor-glow));
+  border-radius: 6px;
+  z-index: -1;
+  opacity: 0.5;
+  animation: phosphorGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes phosphorGlow {
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .terminalTrigger {
+    bottom: 15px;
+    left: 15px;
+    width: 50px;
+    height: 35px;
+  }
+  
+  .terminalContainer {
+    bottom: 55px;
+    left: 15px;
+    right: 15px;
+    width: auto;
+    max-width: 350px;
+    font-size: 11px;
+  }
+  
+  .terminalContent {
+    padding: 10px;
+    max-height: 120px;
+  }
+  
+  .terminalInput {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminalContainer {
+    max-width: 300px;
+    font-size: 10px;
+  }
+  
+  .terminalInput {
+    font-size: 10px;
+  }
+  
+  .welcomeLine {
+    font-size: 10px;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .terminalContainer {
+    border-width: 3px;
+    background: #000000;
+    box-shadow: 0 0 30px var(--matrix-green);
+  }
+  
+  .terminalTrigger {
+    border-width: 2px;
+    background: #000000;
+  }
+  
+  .controlDot {
+    border-width: 2px;
+  }
+  
+  .terminalInput {
+    background: rgba(0, 255, 0, 0.05);
+  }
+  
+  .historyEntry.error {
+    color: #ff0000;
+    font-weight: 900;
+  }
+  
+  .historyEntry.success {
+    color: #00ff00;
+    font-weight: 900;
+  }
+}
+
+/* Enhanced High Contrast Class Support */
+.terminalContainer.highContrast {
+  border-width: 3px;
+  background: #000000;
+  box-shadow: 0 0 30px var(--matrix-green);
+}
+
+.terminalTrigger.highContrast {
+  border-width: 2px;
+  background: #000000;
+  opacity: 1;
+}
+
+.terminalContainer.highContrast .terminalInput {
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid var(--matrix-green-dark);
+}
+
+.terminalContainer.highContrast .historyEntry.error {
+  color: #ff0000;
+  font-weight: 900;
+}
+
+.terminalContainer.highContrast .historyEntry.success {
+  color: #00ff00;
+  font-weight: 900;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .terminalContainer {
+    transition: opacity 0.1s ease;
+    transform: none;
+  }
+  
+  .terminalContainer.visible {
+    transform: none;
+  }
+  
+  .cursor {
+    animation: none;
+    opacity: 1;
+    box-shadow: none;
+  }
+  
+  .terminalContainer::before {
+    animation: none;
+    opacity: 0.4;
+  }
+  
+  .terminalTrigger {
+    transition: opacity 0.1s ease;
+  }
+  
+  .terminalInput {
+    transition: none;
+  }
+  
+  .terminalHistory {
+    scroll-behavior: auto;
+  }
+}
+
+/* Enhanced Reduced Motion Class Support */
+.terminalContainer.reducedMotion {
+  transition: opacity 0.1s ease;
+  transform: none;
+}
+
+.terminalContainer.reducedMotion.visible {
+  transform: none;
+}
+
+.terminalContainer.reducedMotion .cursor {
+  animation: none;
+  opacity: 1;
+  box-shadow: none;
+}
+
+.terminalContainer.reducedMotion::before {
+  animation: none;
+  opacity: 0.4;
+}
+
+.terminalContainer.reducedMotion .terminalHistory {
+  scroll-behavior: auto;
+}
+
+.staticCursor {
+  animation: none !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Screen Reader Only Content */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Enhanced Focus States for Accessibility */
+.terminalContainer:focus {
+  outline: 2px solid var(--matrix-green);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.3), 0 0 20px var(--phosphor-glow);
+}
+
+.terminalContainer:focus-visible {
+  outline: 3px solid var(--matrix-green);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(0, 255, 0, 0.4), 0 0 30px var(--phosphor-glow);
+}
+
+.terminalInput:focus {
+  background: rgba(0, 255, 0, 0.05);
+  outline: 1px solid var(--matrix-green-dark);
+  outline-offset: 1px;
+}
+
+.terminalInput:focus-visible {
+  outline: 2px solid var(--matrix-green);
+  outline-offset: 2px;
+}
+
+.terminalTrigger:focus {
+  outline: 2px solid var(--matrix-green);
+  outline-offset: 2px;
+  box-shadow: 0 0 15px var(--phosphor-glow);
+}
+
+.terminalTrigger:focus-visible {
+  outline: 3px solid var(--matrix-green);
+  outline-offset: 3px;
+  box-shadow: 0 0 20px var(--phosphor-glow);
+}
+
+.terminalHistory:focus {
+  outline: 1px dashed var(--matrix-green-dark);
+  outline-offset: 2px;
+}
+
+/* Keyboard Navigation Indicators */
+.terminalContainer[data-keyboard-active="true"] {
+  border-color: var(--matrix-green);
+  box-shadow: 0 0 25px var(--matrix-green);
+}
+
+.terminalTrigger[aria-expanded="true"] {
+  background: rgba(0, 255, 0, 0.1);
+  border-color: var(--matrix-green);
+}
+
+/* Screen Reader Enhancements */
+.terminalContainer[data-screen-reader="true"] {
+  /* Ensure sufficient padding for screen reader navigation */
+  padding: 4px;
+}
+
+.terminalContainer[data-screen-reader="true"] .terminalInput {
+  /* Larger input area for screen reader users */
+  padding: 4px 8px;
+  min-height: 20px;
+}
+
+.terminalContainer[data-screen-reader="true"] .historyEntry {
+  /* Better spacing for screen reader navigation */
+  margin-bottom: 4px;
+  padding: 2px 0;
+}
+
+/* Forced Colors Mode (Windows High Contrast) */
+@media (forced-colors: active) {
+  .terminalContainer {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border: 2px solid ButtonText !important;
+    box-shadow: none !important;
+  }
+  
+  .terminalTrigger {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border: 2px solid ButtonText !important;
+  }
+  
+  .terminalInput {
+    background: Field !important;
+    color: FieldText !important;
+    border: 1px solid ButtonText !important;
+  }
+  
+  .terminalContainer:focus {
+    outline: 2px solid Highlight !important;
+    border-color: Highlight !important;
+  }
+  
+  .terminalTrigger:focus {
+    outline: 2px solid Highlight !important;
+    border-color: Highlight !important;
+  }
+  
+  .cursor {
+    background: CanvasText !important;
+    animation: none !important;
+  }
+  
+  .historyEntry.error {
+    color: CanvasText !important;
+    background: Mark !important;
+  }
+  
+  .historyEntry.success {
+    color: CanvasText !important;
+  }
+}
+/* Add
+itional Accessibility Enhancements */
+
+/* Touch Device Support */
+@media (pointer: coarse) {
+  .terminalTrigger {
+    width: 50px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .terminalInput {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 8px;
+  }
+  
+  .terminalContainer:focus {
+    outline-width: 4px;
+    outline-offset: 4px;
+  }
+}
+
+/* Voice Control Support */
+.terminalContainer[aria-label] {
+  position: relative;
+}
+
+.terminalInput[role="combobox"] {
+  /* Ensure voice control can target input */
+  position: relative;
+}
+
+/* Print Accessibility */
+@media print {
+  .terminalContainer {
+    position: static !important;
+    background: white !important;
+    color: black !important;
+    border: 2px solid black !important;
+    box-shadow: none !important;
+    margin: 10px 0 !important;
+    page-break-inside: avoid;
+  }
+  
+  .terminalTrigger {
+    display: none !important;
+  }
+  
+  .terminalInput {
+    background: white !important;
+    color: black !important;
+    border: 1px solid black !important;
+  }
+  
+  .cursor {
+    display: none !important;
+  }
+  
+  .srOnly {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    clip: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    font-size: 10px !important;
+    color: #666 !important;
+    font-style: italic !important;
+  }
+}
+
+/* Battery Saving Mode */
+@media (prefers-reduced-data: reduce) {
+  .terminalContainer {
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  .terminalContainer::before {
+    display: none !important;
+  }
+}
+
+/* Animation Performance Optimization for Accessibility */
+.terminalContainer[data-reduced-motion="false"] {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.terminalContainer[data-reduced-motion="true"] {
+  will-change: opacity;
+  backface-visibility: visible;
+  perspective: none;
+}
+
+/* Accessibility Status Indicators */
+.terminalContainer[data-high-contrast="true"]::after {
+  content: 'HC';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  background: var(--matrix-green);
+  color: #000000;
+  font-size: 8px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-family: var(--font-terminal);
+  z-index: 1;
+}
+
+.terminalContainer[data-reduced-motion="true"]::after {
+  content: 'RM';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--matrix-green-dark);
+  color: #000000;
+  font-size: 8px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-family: var(--font-terminal);
+  z-index: 1;
+}
+
+/* Ensure both indicators can coexist */
+.terminalContainer[data-high-contrast="true"][data-reduced-motion="true"]::after {
+  content: 'HC+RM';
+  top: -8px;
+  right: -8px;
+  left: auto;
+}
+
+/* Color Blind Accessibility - Use patterns in addition to colors */
+.historyEntry.error::before {
+  content: '✗ ';
+  font-weight: bold;
+}
+
+.historyEntry.success::before {
+  content: '✓ ';
+  font-weight: bold;
+}
+
+.historyEntry.warning::before {
+  content: '⚠ ';
+  font-weight: bold;
+}
+
+.historyEntry.info::before {
+  content: 'ℹ ';
+  font-weight: bold;
+}
+
+/* Accessibility Debug Mode (Development Only) */
+.accessibility-debug .terminalContainer {
+  outline: 1px dashed red !important;
+  outline-offset: 1px !important;
+}
+
+.accessibility-debug .terminalContainer::before {
+  content: 'A11Y: Terminal Interface' !important;
+  position: absolute !important;
+  top: -20px !important;
+  left: 0 !important;
+  background: red !important;
+  color: white !important;
+  font-size: 10px !important;
+  padding: 2px 4px !important;
+  border-radius: 2px !important;
+  z-index: 1000 !important;
+  max-width: 200px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.accessibility-debug .srOnly {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  clip: none !important;
+  overflow: visible !important;
+  background: yellow !important;
+  color: black !important;
+  border: 1px solid red !important;
+  padding: 2px !important;
+  margin: 2px !important;
+}

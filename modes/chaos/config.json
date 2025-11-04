@@ -1,8 +1,7 @@
 {
+  "id": "chaos",
   "name": "Chaos",
   "popupStyle": "overlay",
-  "popupPosition": "overlay",
-  "animationType": "glitchy",
   "minDelaySeconds": 5,
   "maxDelaySeconds": 15,
   "messageProbabilities": {
@@ -11,7 +10,8 @@
     "other": 0.1
   },
   "sceneProps": {
-    "bgColor": "#4a0e4e",
-    "ambientSpeed": 2.0
+    "bgColor": "#220011",
+    "ambientSpeed": 2.0,
+    "primaryColor": "#ff0066"
   }
 }

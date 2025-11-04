@@ -1,0 +1,147 @@
+name: "Basic 3D Content Implementation"
+version: "1.0"
+description: "Create basic placeholder 3D scenes and characters to validate the Three.js integration and see the app working"
+
+requirements:
+  functional:
+    - Create 3 basic personality modes with working 3D content
+    - Implement simple animated background scenes
+    - Add basic wireframe characters with speak animations
+    - Ensure mode switching actually changes the 3D content
+    - Test that the terminal commands work with real content
+
+  technical:
+    - Use react-three-fiber and drei for all 3D content
+    - Keep geometry simple (boxes, spheres, toruses) for performance
+    - Implement continuous subtle animations (rotation, scaling)
+    - Characters must respond to onSpeak callback
+    - All scenes must be full-screen backgrounds
+
+  visual:
+    - Match personality mood through colors and movement
+    - Use matrix green color scheme as base
+    - Corporate AI: Geometric, structured, professional
+    - Zen Monk: Organic, flowing, peaceful
+    - Chaos: Erratic, colorful, unpredictable
+
+tasks:
+  1:
+    name: "Create Corporate AI Mode"
+    description: "Implement the first working personality mode with 3D content"
+    requirements:
+      - Create /modes/corporate-ai/ folder structure
+      - Implement scene.js with rotating geometric shapes
+      - Create character.js with simple wireframe business figure
+      - Add config.json and messages.json
+      - Test mode switching and terminal commands
+    
+    deliverables:
+      - modes/corporate-ai/scene.js - Animated geometric background
+      - modes/corporate-ai/character.js - Simple business character
+      - modes/corporate-ai/config.json - Mode configuration
+      - modes/corporate-ai/messages.json - Professional AI messages
+    
+    validation:
+      - Scene renders without errors
+      - Character appears in bottom-right corner
+      - Mode switching works via terminal (!switch Corporate AI)
+      - Messages appear when using !test command
+      - Animations run smoothly at 60fps
+
+  2:
+    name: "Create Zen Monk Mode"
+    description: "Implement peaceful, organic 3D content"
+    requirements:
+      - Create flowing, organic background animations
+      - Simple meditation figure character
+      - Peaceful color palette (soft greens, blues)
+      - Slow, calming animations
+      - Zen-appropriate messages
+    
+    deliverables:
+      - modes/zen-monk/scene.js - Flowing organic shapes
+      - modes/zen-monk/character.js - Meditation figure
+      - modes/zen-monk/config.json - Peaceful timing settings
+      - modes/zen-monk/messages.json - Zen wisdom messages
+    
+    validation:
+      - Smooth organic animations
+      - Character has meditation pose
+      - Terminal switching works (!switch Zen Monk)
+      - Messages have zen-like content
+
+  3:
+    name: "Create Chaos Mode"
+    description: "Implement erratic, energetic 3D content"
+    requirements:
+      - Rapid, unpredictable animations
+      - Multiple colors and shapes
+      - High-energy character movements
+      - Fast message timing
+      - Chaotic but not nauseating
+    
+    deliverables:
+      - modes/chaos/scene.js - Erratic multi-shape scene
+      - modes/chaos/character.js - Energetic character
+      - modes/chaos/config.json - Fast timing settings
+      - modes/chaos/messages.json - Chaotic messages
+    
+    validation:
+      - Multiple animated elements
+      - Character has energetic movements
+      - Terminal switching works (!switch Chaos)
+      - Fast message rotation
+
+  4:
+    name: "Integration Testing"
+    description: "Test the complete system with real 3D content"
+    requirements:
+      - All three modes switch properly
+      - Terminal commands work with real content
+      - Performance remains smooth
+      - No WebGL errors or memory leaks
+      - Responsive design works with 3D content
+    
+    deliverables:
+      - Updated ModeLoader.jsx to handle real mode imports
+      - Performance validation tests
+      - Cross-mode switching validation
+      - Memory usage monitoring
+    
+    validation:
+      - Smooth switching between all 3 modes
+      - Terminal commands (!switch, !test, !pause) work
+      - No console errors
+      - Maintains 60fps performance
+      - Works on different screen sizes
+
+acceptance_criteria:
+  - User can run npm run dev and see working 3D content
+  - Terminal commands successfully switch between 3 modes
+  - Each mode has distinct visual personality
+  - Characters animate when messages appear
+  - No performance issues or errors
+  - App demonstrates the "Frankenstein" concept clearly
+
+testing:
+  unit:
+    - Each mode component renders without errors
+    - Character onSpeak callbacks function properly
+    - Scene animations run continuously
+  
+  integration:
+    - Mode switching updates both scene and character
+    - Terminal commands trigger correct mode changes
+    - Message system works with real content
+  
+  performance:
+    - Maintains 60fps with all animations
+    - Memory usage stays reasonable during mode switching
+    - WebGL context handles multiple scene changes
+
+notes:
+  - Keep geometry simple - this is proof of concept
+  - Focus on getting something working rather than perfection
+  - Use placeholder textures and basic materials
+  - Prioritize functionality over visual polish
+  - This validates the entire architecture works

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Interface Integration Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        
+        .pass {
+            color: #00ff00;
+        }
+        
+        .fail {
+            color: #ff0000;
+        }
+        
+        .info {
+            color: #ffff00;
+        }
+        
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        button:hover {
+            background: #006600;
+        }
+        
+        .mock-terminal {
+            background: rgba(0, 51, 0, 0.2);
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            min-height: 100px;
+        }
+        
+        .command-log {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🖥️ Terminal Interface Integration Test</h1>
+        <p class="info">This page tests the CommandExecutor integration without requiring React setup.</p>
+        
+        <div class="test-section">
+            <h2>📋 Test Status</h2>
+            <div id="test-status">Ready to run tests...</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Manual Tests</h2>
+            <button onclick="testCharacterSwitch()">Test Character Switch</button>
+            <button onclick="testMessageControl()">Test Message Control</button>
+            <button onclick="testSystemStatus()">Test System Status</button>
+            <button onclick="testCommandQueue()">Test Command Queue</button>
+            <button onclick="testErrorHandling()">Test Error Handling</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Results</h2>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🖥️ Mock Terminal Output</h2>
+            <div class="mock-terminal" id="terminal-output">
+                <div class="command-log">Terminal ready. Click buttons above to test commands.</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📈 Statistics</h2>
+            <div id="statistics">
+                <div>Tests Run: <span id="tests-run">0</span></div>
+                <div>Tests Passed: <span id="tests-passed">0</span></div>
+                <div>Tests Failed: <span id="tests-failed">0</span></div>
+                <div>Success Rate: <span id="success-rate">0%</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock CommandExecutor for testing
+        class MockCommandExecutor {
+            constructor(options = {}) {
+                this.onCharacterSwitch = options.onCharacterSwitch || (() => {});
+                this.onMessageControl = options.onMessageControl || (() => {});
+                this.getCurrentState = options.getCurrentState || (() => ({}));
+                this.onError = options.onError || console.error;
+                
+                this.commandQueue = [];
+                this.isProcessing = false;
+                this.executionHistory = [];
+                this.startTime = Date.now();
+            }
+            
+            async execute(commandResult, context = {}) {
+                // Simulate the real CommandExecutor logic
+                if (!commandResult || typeof commandResult !== 'object') {
+                    return {
+                        success: false,
+                        message: 'Invalid command result'
+                    };
+                }
+                
+                if (!commandResult.success) {
+                    return commandResult;
+                }
+                
+                // Add to history
+                this.executionHistory.push({
+                    action: commandResult.action,
+                    timestamp: Date.now(),
+                    success: true
+                });
+                
+                // Simulate processing delay
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                switch (commandResult.action) {
+                    case 'switch-character':
+                        if (commandResult.data && commandResult.data.character) {
+                            this.onCharacterSwitch({
+                                id: commandResult.data.character,
+                                name: commandResult.data.displayName
+                            });
+                            return {
+                                success: true,
+                                message: `Successfully switched to ${commandResult.data.displayName}`,
+                                action: 'switch-character'
+                            };
+                        }
+                        return {
+                            success: false,
+                            message: 'Invalid character data'
+                        };
+                        
+                    case 'pause-messages':
+                    case 'resume-messages':
+                    case 'test-message':
+                        const actionMap = {
+                            'pause-messages': 'pause',
+                            'resume-messages': 'resume',
+                            'test-message': 'test'
+                        };
+                        this.onMessageControl(actionMap[commandResult.action]);
+                        return {
+                            success: true,
+                            message: `Message ${actionMap[commandResult.action]} executed`,
+                            action: commandResult.action
+                        };
+                        
+                    case 'show-status':
+                        const state = this.getCurrentState();
+                        return {
+                            success: true,
+                            message: `System Status:\nCharacter: ${state.currentCharacter || 'Corporate AI'}\nMessages: ${state.messageStatus || 'Active'}\nTerminal: Online`,
+                            action: 'show-status'
+                        };
+                        
+                    default:
+                        return {
+                            success: true,
+                            message: 'Command executed',
+                            action: commandResult.action
+                        };
+                }
+            }
+            
+            getExecutionStats() {
+                const total = this.executionHistory.length;
+                const successful = this.executionHistory.filter(e => e.success).length;
+                return {
+                    total,
+                    successful,
+                    failed: total - successful,
+                    successRate: total > 0 ? ((successful / total) * 100).toFixed(1) + '%' : '0%'
+                };
+            }
+            
+            getQueueStatus() {
+                return {
+                    length: this.commandQueue.length,
+                    maxSize: 10,
+                    isProcessing: this.isProcessing
+                };
+            }
+        }
+        
+        // Test state
+        let testsRun = 0;
+        let testsPassed = 0;
+        let testsFailed = 0;
+        
+        // Mock callbacks
+        const mockCallbacks = {
+            onCharacterSwitch: (mode) => {
+                logToTerminal(`✓ Character switched to: ${mode.name} (${mode.id})`);
+            },
+            
+            onMessageControl: (action) => {
+                logToTerminal(`✓ Message control: ${action}`);
+            },
+            
+            getCurrentState: () => ({
+                currentCharacter: 'Corporate AI',
+                messageStatus: 'Active',
+                terminalVisible: true
+            }),
+            
+            onError: (message, error) => {
+                logToTerminal(`✗ Error: ${message}`);
+            }
+        };
+        
+        // Initialize executor
+        const executor = new MockCommandExecutor(mockCallbacks);
+        
+        // Utility functions
+        function logToTerminal(message) {
+            const terminal = document.getElementById('terminal-output');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'command-log';
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            terminal.appendChild(logEntry);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function logResult(testName, success, message) {
+            const results = document.getElementById('test-results');
+            const result = document.createElement('div');
+            result.className = `test-result ${success ? 'pass' : 'fail'}`;
+            result.textContent = `${success ? '✓' : '✗'} ${testName}: ${message}`;
+            results.appendChild(result);
+            
+            testsRun++;
+            if (success) {
+                testsPassed++;
+            } else {
+                testsFailed++;
+            }
+            
+            updateStatistics();
+        }
+        
+        function updateStatistics() {
+            document.getElementById('tests-run').textContent = testsRun;
+            document.getElementById('tests-passed').textContent = testsPassed;
+            document.getElementById('tests-failed').textContent = testsFailed;
+            document.getElementById('success-rate').textContent = 
+                testsRun > 0 ? ((testsPassed / testsRun) * 100).toFixed(1) + '%' : '0%';
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('test-status').textContent = message;
+        }
+        
+        // Test functions
+        window.testCharacterSwitch = async function() {
+            updateStatus('Testing character switch...');
+            logToTerminal('Testing character switch commands...');
+            
+            try {
+                // Test valid character switch
+                const result1 = await executor.execute({
+                    success: true,
+                    action: 'switch-character',
+                    data: {
+                        character: 'zen-monk',
+                        displayName: 'Zen Monk'
+                    }
+                });
+                
+                logResult('Character Switch (Valid)', result1.success, result1.message);
+                
+                // Test invalid character switch
+                const result2 = await executor.execute({
+                    success: true,
+                    action: 'switch-character',
+                    data: {
+                        character: 'invalid-character'
+                    }
+                });
+                
+                logResult('Character Switch (Invalid)', !result2.success, result2.message);
+                
+            } catch (error) {
+                logResult('Character Switch', false, error.message);
+            }
+            
+            updateStatus('Character switch tests completed.');
+        };
+        
+        window.testMessageControl = async function() {
+            updateStatus('Testing message control...');
+            logToTerminal('Testing message control commands...');
+            
+            try {
+                const commands = [
+                    { action: 'pause-messages', name: 'Pause' },
+                    { action: 'resume-messages', name: 'Resume' },
+                    { action: 'test-message', name: 'Test' }
+                ];
+                
+                for (const cmd of commands) {
+                    const result = await executor.execute({
+                        success: true,
+                        action: cmd.action
+                    });
+                    
+                    logResult(`Message Control (${cmd.name})`, result.success, result.message);
+                }
+                
+            } catch (error) {
+                logResult('Message Control', false, error.message);
+            }
+            
+            updateStatus('Message control tests completed.');
+        };
+        
+        window.testSystemStatus = async function() {
+            updateStatus('Testing system status...');
+            logToTerminal('Testing system status commands...');
+            
+            try {
+                const result = await executor.execute({
+                    success: true,
+                    action: 'show-status'
+                });
+                
+                logResult('System Status', result.success, 'Status retrieved successfully');
+                logToTerminal(`Status: ${result.message.replace(/\n/g, ' | ')}`);
+                
+            } catch (error) {
+                logResult('System Status', false, error.message);
+            }
+            
+            updateStatus('System status tests completed.');
+        };
+        
+        window.testCommandQueue = async function() {
+            updateStatus('Testing command queue...');
+            logToTerminal('Testing command queue with rapid commands...');
+            
+            try {
+                const promises = [];
+                
+                // Submit multiple commands rapidly
+                for (let i = 0; i < 5; i++) {
+                    promises.push(executor.execute({
+                        success: true,
+                        action: 'pause-messages'
+                    }));
+                }
+                
+                const results = await Promise.all(promises);
+                const allSuccessful = results.every(r => r.success);
+                
+                logResult('Command Queue', allSuccessful, `Processed ${results.length} rapid commands`);
+                
+                // Test queue status
+                const queueStatus = executor.getQueueStatus();
+                logResult('Queue Status', typeof queueStatus.length === 'number', 
+                    `Queue: ${queueStatus.length}/${queueStatus.maxSize}`);
+                
+            } catch (error) {
+                logResult('Command Queue', false, error.message);
+            }
+            
+            updateStatus('Command queue tests completed.');
+        };
+        
+        window.testErrorHandling = async function() {
+            updateStatus('Testing error handling...');
+            logToTerminal('Testing error handling...');
+            
+            try {
+                // Test invalid command result
+                const result1 = await executor.execute(null);
+                logResult('Error Handling (Null)', !result1.success, result1.message);
+                
+                // Test parse error passthrough
+                const result2 = await executor.execute({
+                    success: false,
+                    message: 'Parse error test',
+                    suggestion: 'Try again'
+                });
+                logResult('Error Handling (Parse)', !result2.success, result2.message);
+                
+            } catch (error) {
+                logResult('Error Handling', false, error.message);
+            }
+            
+            updateStatus('Error handling tests completed.');
+        };
+        
+        window.runAllTests = async function() {
+            updateStatus('Running all tests...');
+            logToTerminal('=== Starting comprehensive test suite ===');
+            
+            // Clear previous results
+            document.getElementById('test-results').innerHTML = '';
+            testsRun = 0;
+            testsPassed = 0;
+            testsFailed = 0;
+            updateStatistics();
+            
+            await testCharacterSwitch();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testMessageControl();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testSystemStatus();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testCommandQueue();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testErrorHandling();
+            
+            // Final statistics
+            const stats = executor.getExecutionStats();
+            logToTerminal(`=== Test Suite Complete ===`);
+            logToTerminal(`Execution Stats: ${stats.total} total, ${stats.successRate} success rate`);
+            
+            updateStatus(`All tests completed. ${testsPassed}/${testsRun} passed (${((testsPassed/testsRun)*100).toFixed(1)}%)`);
+        };
+        
+        // Initialize
+        updateStatus('Integration test ready. Click buttons to test functionality.');
+        logToTerminal('CommandExecutor integration test initialized.');
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+name: "Cloudflare Pages Deployment Setup"
+version: "1.0"
+description: "Configure VibeScreen for deployment on Cloudflare Pages with static export and optimal performance"
+
+requirements:
+  functional:
+    - Static export compatibility for Cloudflare Pages
+    - Proper asset handling and routing
+    - Environment-specific configurations
+    - Build optimization for Three.js content
+    - Custom domain and SSL setup
+
+  technical:
+    - Next.js static export configuration
+    - Cloudflare Pages build settings
+    - Asset optimization and caching
+    - Three.js bundle optimization
+    - Progressive Web App features
+
+  performance:
+    - Fast initial load times
+    - Efficient Three.js asset loading
+    - CDN optimization for global delivery
+    - Proper caching strategies
+
+tasks:
+  1:
+    name: "Static Export Configuration"
+    description: "Ensure Next.js is properly configured for static export"
+    requirements:
+      - Verify static export settings in next.config.js
+      - Remove any server-side dependencies
+      - Configure proper asset paths
+      - Test local static build
+    
+    deliverables:
+      - Updated next.config.js with Cloudflare optimizations
+      - Package.json scripts for deployment
+      - Build verification tests
+    
+    validation:
+      - npm run build && npm run export works without errors
+      - All assets load correctly from /out directory
+      - Three.js content renders in static build
+      - No server-side code in exported files
+
+  2:
+    name: "Cloudflare Pages Configuration"
+    description: "Set up Cloudflare Pages build and deployment settings"
+    requirements:
+      - Create _headers file for proper MIME types
+      - Configure _redirects for SPA routing
+      - Set up build commands and environment
+      - Optimize for Cloudflare's CDN
+    
+    deliverables:
+      - public/_headers - HTTP headers configuration
+      - public/_redirects - Routing configuration
+      - .github/workflows/deploy.yml - Optional CI/CD
+      - cloudflare-pages.md - Deployment instructions
+    
+    validation:
+      - Static files deploy successfully
+      - Three.js content loads from CDN
+      - Routing works for all pages
+      - Headers set correctly for assets
+
+  3:
+    name: "Performance Optimization"
+    description: "Optimize bundle size and loading performance"
+    requirements:
+      - Three.js code splitting and lazy loading
+      - Asset compression and optimization
+      - Service worker for caching
+      - Progressive loading strategies
+    
+    deliverables:
+      - Optimized webpack configuration
+      - Service worker implementation
+      - Asset preloading strategies
+      - Performance monitoring setup
+    
+    validation:
+      - Bundle size under 2MB initial load
+      - Three.js loads progressively
+      - Fast Time to Interactive (TTI)
+      - Good Lighthouse scores
+
+  4:
+    name: "Deployment Documentation"
+    description: "Create comprehensive deployment guide"
+    requirements:
+      - Step-by-step Cloudflare Pages setup
+      - Custom domain configuration
+      - Environment variables setup
+      - Troubleshooting guide
+    
+    deliverables:
+      - DEPLOYMENT.md - Complete deployment guide
+      - Environment configuration examples
+      - Troubleshooting documentation
+      - Performance optimization tips
+    
+    validation:
+      - Documentation is clear and complete
+      - All steps tested and verified
+      - Common issues addressed
+      - Performance benchmarks included
+
+cloudflare_specific:
+  build_settings:
+    build_command: "npm run build && npm run export"
+    build_output_directory: "out"
+    root_directory: "/"
+    environment_variables:
+      NODE_VERSION: "18"
+      NPM_VERSION: "8"
+  
+  headers_config: |
+    # Cache static assets
+    /assets/*
+      Cache-Control: public, max-age=31536000, immutable
+    
+    # Three.js specific files
+    *.wasm
+      Content-Type: application/wasm
+    *.glb
+      Content-Type: model/gltf-binary
+    *.gltf
+      Content-Type: model/gltf+json
+    
+    # Security headers
+    /*
+      X-Frame-Options: DENY
+      X-Content-Type-Options: nosniff
+      Referrer-Policy: strict-origin-when-cross-origin
+  
+  redirects_config: |
+    # SPA routing - redirect all non-asset requests to index.html
+    /*    /index.html   200
+
+acceptance_criteria:
+  - App deploys successfully to Cloudflare Pages
+  - All Three.js content loads and renders correctly
+  - Performance meets or exceeds local development
+  - Custom domain works with SSL
+  - Build process is automated and reliable
+
+deployment_steps:
+  1. "Connect GitHub repository to Cloudflare Pages"
+  2. "Configure build settings (build command, output directory)"
+  3. "Set environment variables"
+  4. "Deploy and test"
+  5. "Configure custom domain (optional)"
+  6. "Set up monitoring and analytics"
+
+performance_targets:
+  - First Contentful Paint: < 2s
+  - Largest Contentful Paint: < 3s
+  - Time to Interactive: < 4s
+  - Bundle size: < 2MB initial
+  - Three.js load time: < 1s after initial load
+
+notes:
+  - Cloudflare Pages is perfect for static Next.js apps
+  - Three.js content works great with CDN delivery
+  - No server-side code needed for VibeScreen
+  - Free tier supports custom domains and SSL
+  - Global CDN provides excellent performance

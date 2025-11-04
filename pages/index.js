@@ -1,14 +1,88 @@
 import { useAppContext } from './_app';
 import { useEffect, useState } from 'react';
+import ModeLoader from '../components/ModeLoader';
+import CharacterHost from '../components/CharacterHost';
+import TerminalInterface from '../components/TerminalInterface';
+import MessageController from '../components/MessageController';
 
 export default function Home() {
-  const { currentMode, globalConfig } = useAppContext();
+  const { currentMode, globalConfig, setCurrentMode, messagesPaused, setMessagesPaused } = useAppContext();
   const [mounted, setMounted] = useState(false);
+  const [modeComponents, setModeComponents] = useState({});
+  const [modeConfig, setModeConfig] = useState({});
+  const [speakTrigger, setSpeakTrigger] = useState(0);
 
   // Ensure component is mounted before rendering to prevent hydration issues
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Handle mode changes from ModeLoader
+  const handleModeChange = (newMode) => {
+    console.log(`🔄 Mode change requested: ${newMode}`);
+    if (setCurrentMode) {
+      setCurrentMode(newMode);
+    }
+  };
+
+  // Handle mode loading updates
+  const handleModeLoaded = (mode, components, config) => {
+    setModeComponents(prev => ({
+      ...prev,
+      [mode]: components
+    }));
+    setModeConfig(prev => ({
+      ...prev,
+      [mode]: config
+    }));
+  };
+
+  // Handle errors from mode loading
+  const handleModeError = (error, context) => {
+    console.error('Mode loading error:', error, context);
+    // Could implement error reporting here
+  };
+
+  // Trigger character speak animation
+  const triggerSpeak = () => {
+    setSpeakTrigger(prev => prev + 1);
+  };
+
+  // Handle character switching from terminal
+  const handleCharacterSwitch = (modeObject) => {
+    console.log('🔄 Character switch requested:', modeObject);
+    if (modeObject && modeObject.id) {
+      setCurrentMode(modeObject.id);
+    } else if (typeof modeObject === 'string') {
+      setCurrentMode(modeObject);
+    }
+  };
+
+  // Handle message control from terminal
+  const handleMessageControl = (action) => {
+    console.log('📨 Message control requested:', action);
+    switch (action) {
+      case 'pause':
+        setMessagesPaused(true);
+        break;
+      case 'resume':
+        setMessagesPaused(false);
+        break;
+      case 'test':
+        triggerSpeak();
+        break;
+      default:
+        console.warn('Unknown message control action:', action);
+    }
+  };
+
+  // Get current application state for terminal
+  const getCurrentState = () => ({
+    currentCharacter: currentMode || 'Corporate AI',
+    messageStatus: messagesPaused ? 'Paused' : 'Active',
+    terminalVisible: true,
+    globalConfig
+  });
 
   if (!mounted) {
     return (
@@ -39,7 +113,7 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Scene Container - Will hold Three.js scenes */}
+        {/* Scene Container - Real Three.js scenes */}
         <section 
           className="scene-container" 
           id="scene-container"
@@ -47,34 +121,44 @@ export default function Home() {
           aria-label="3D background scene area"
           aria-describedby="scene-status"
         >
-          <div className="scene-placeholder">
-            <div className="placeholder-content">
-              <div className="placeholder-icon" aria-hidden="true">🤖</div>
-              <p className="placeholder-text" id="scene-status">3D Scene Loading...</p>
-              <small className="placeholder-note" aria-live="polite">
-                Current Mode: {currentMode || 'Loading...'}
-              </small>
-            </div>
+          <ModeLoader
+            currentMode={currentMode}
+            onModeChange={handleModeChange}
+            onModeLoaded={handleModeLoaded}
+            onError={handleModeError}
+          />
+          <div className="sr-only" id="scene-status" aria-live="polite">
+            Current Mode: {currentMode || 'Loading...'}
           </div>
         </section>
 
         {/* Character Host Area - Bottom Right */}
-        <aside 
-          className="character-host" 
-          id="character-host"
-          role="complementary"
-          aria-label="AI character display area"
-          aria-describedby="character-status"
-        >
-          <div className="character-placeholder">
-            <div className="character-icon" aria-hidden="true">👾</div>
-            <div className="character-status">
-              <span className="status-text" id="character-status" aria-live="polite">
-                Character Loading...
-              </span>
-            </div>
-          </div>
-        </aside>
+        <CharacterHost
+          currentMode={currentMode}
+          characterComponent={modeComponents[currentMode]?.character}
+          config={modeConfig[currentMode]}
+          onSpeak={speakTrigger}
+          onError={handleModeError}
+        />
+
+        {/* Message System */}
+        <MessageController
+          currentMode={currentMode}
+          globalConfig={globalConfig}
+          isPaused={messagesPaused}
+          onError={handleModeError}
+          characterPosition={{ x: typeof window !== 'undefined' ? window.innerWidth - 120 : 1200, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 600 }}
+        />
+
+        {/* Terminal Interface - Bottom Left */}
+        <TerminalInterface
+          onCharacterSwitch={handleCharacterSwitch}
+          onMessageControl={handleMessageControl}
+          currentCharacter={currentMode}
+          messageStatus={messagesPaused ? 'Paused' : 'Active'}
+          getCurrentState={getCurrentState}
+          onError={handleModeError}
+        />
 
         {/* Mode Selector Placeholder - Bottom Navigation */}
         <nav 
@@ -140,6 +224,7 @@ export default function Home() {
               title="Test Message"
               aria-label="Show test message"
               type="button"
+              onClick={triggerSpeak}
             >
               <span aria-hidden="true">💬</span>
             </button>
@@ -154,28 +239,7 @@ export default function Home() {
           </div>
         </aside>
 
-        {/* Terminal Interface Placeholder - Bottom Left */}
-        <aside 
-          className="terminal-placeholder"
-          role="complementary"
-          aria-label="Terminal command interface"
-        >
-          <div 
-            className="terminal-indicator"
-            role="button"
-            tabIndex="0"
-            aria-label="Activate terminal interface"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                // Future: activate terminal
-                e.preventDefault();
-              }
-            }}
-          >
-            <span className="terminal-icon" aria-hidden="true">&gt;</span>
-            <span className="terminal-text">Terminal (Hover to activate)</span>
-          </div>
-        </aside>
+
       </main>
 
       {/* Development Info Panel */}

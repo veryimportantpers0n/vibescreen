@@ -1,9 +1,8 @@
 {
+  "id": "corporate-ai",
   "name": "Corporate AI",
   "popupStyle": "overlay",
-  "popupPosition": "overlay",
-  "animationType": "normal",
-  "minDelaySeconds": 12,
+  "minDelaySeconds": 20,
   "maxDelaySeconds": 45,
   "messageProbabilities": {
     "cliche": 0.6,
@@ -11,7 +10,8 @@
     "other": 0.2
   },
   "sceneProps": {
-    "bgColor": "#f7f7f7",
-    "ambientSpeed": 0.2
+    "bgColor": "#001122",
+    "ambientSpeed": 0.3,
+    "primaryColor": "#0066cc"
   }
 }

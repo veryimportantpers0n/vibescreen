@@ -35,6 +35,11 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   
+  /* Terminal Interface */
+  --terminal-bg: rgba(0, 0, 0, 0.95);
+  --terminal-border: #00FF00;
+  --matrix-green-darker: #003300;
+  
   /* Z-index layers */
   --z-background: 0;
   --z-scene: 10;
@@ -969,7 +974,8 @@ button:focus-visible,
   .terminal-placeholder {
     display: none;
   }
-}/* 
+}
+/* 
 SceneWrapper Styles */
 .scene-wrapper {
   position: fixed;
@@ -1045,7 +1051,7 @@ SceneWrapper Styles */
   }
 }
 
-* Enhanced Scene Fallback UI Styles */
+/* Enhanced Scene Fallback UI Styles */
 .scene-fallback .error-title {
   color: #ff6666;
   font-size: var(--font-size-large);
@@ -1758,5 +1764,254 @@ SceneWrapper Styles */
     align-items: center;
     padding: var(--spacing-md);
   }
-};
-  
+}/* ModeLoa
+der Styles */
+.mode-loader {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mode-loader.loading .loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.mode-loader.loading .loading-content {
+  text-align: center;
+  color: var(--matrix-green);
+}
+
+.mode-loader.loading .loading-spinner {
+  font-size: 1.2rem;
+  font-family: var(--font-terminal);
+}
+
+.mode-loader.error .error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.mode-loader.error .error-content {
+  text-align: center;
+  color: var(--matrix-green);
+  max-width: 500px;
+  padding: 2rem;
+}
+
+.mode-loader.error .error-title {
+  color: #ff4444;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.mode-loader.error .error-message {
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.mode-loader.error .retry-button,
+.mode-loader.error .fallback-button {
+  background: transparent;
+  border: 2px solid var(--matrix-green);
+  color: var(--matrix-green);
+  padding: 0.5rem 1rem;
+  margin: 0.5rem;
+  font-family: var(--font-terminal);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-loader.error .retry-button:hover,
+.mode-loader.error .fallback-button:hover {
+  background: var(--matrix-green);
+  color: black;
+  box-shadow: 0 0 10px var(--matrix-green);
+}
+
+.mode-loader.fallback .fallback-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--matrix-green);
+  z-index: 100;
+}
+
+/* CharacterHost Styles */
+.character-host {
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.character-host.loading .character-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.character-host.loading .loading-placeholder {
+  text-align: center;
+  color: var(--matrix-green);
+}
+
+.character-host.loading .placeholder-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.character-host.loading .loading-text {
+  font-size: 0.8rem;
+}
+
+.character-host.error .character-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.character-host.error .error-content {
+  text-align: center;
+  color: var(--matrix-green);
+}
+
+.character-host.error .error-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.character-host.error .error-text {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.character-host.error .retry-button {
+  background: transparent;
+  border: 1px solid var(--matrix-green);
+  color: var(--matrix-green);
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-terminal);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.character-host.error .retry-button:hover {
+  background: var(--matrix-green);
+  color: black;
+}
+
+.character-host.speaking {
+  animation: character-speak-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes character-speak-pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.02);
+  }
+}
+
+/* Loading dots animation */
+.loading-dots::after {
+  content: '';
+  animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+  0%, 20% {
+    content: '';
+  }
+  40% {
+    content: '.';
+  }
+  60% {
+    content: '..';
+  }
+  80%, 100% {
+    content: '...';
+  }
+}
+
+/* Character status indicator */
+.character-status .status-bar {
+  transition: width 0.3s ease;
+}
+
+.character-host.speaking .status-bar {
+  animation: status-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes status-pulse {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Development debug styles */
+.character-debug {
+  user-select: none;
+  pointer-events: none;
+}
+
+.performance-monitor {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--matrix-green);
+  font-family: var(--font-terminal);
+  font-size: 0.7rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  z-index: 9999;
+  border: 1px solid var(--matrix-green);
+}
+
+.performance-stats span {
+  display: inline-block;
+  margin-right: 1rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 2px;
+}
+
+.performance-stats span[data-status="good"] {
+  background: rgba(0, 255, 0, 0.2);
+}
+
+.performance-stats span[data-status="warning"] {
+  background: rgba(255, 255, 0, 0.2);
+}
+
+.performance-stats span[data-status="critical"] {
+  background: rgba(255, 0, 0, 0.2);
+}
