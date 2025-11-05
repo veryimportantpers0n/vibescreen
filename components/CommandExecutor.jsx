@@ -7,6 +7,7 @@
 
 import React, { useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import SettingsManager from '../utils/SettingsManager.js';
 
 class CommandExecutor {
   constructor(options = {}) {
@@ -14,6 +15,9 @@ class CommandExecutor {
     this.onMessageControl = options.onMessageControl || (() => {});
     this.getCurrentState = options.getCurrentState || (() => ({}));
     this.onError = options.onError || console.error;
+    
+    // Initialize settings manager
+    this.settingsManager = options.settingsManager || new SettingsManager();
     
     // Command queue for handling rapid input
     this.commandQueue = [];
@@ -152,6 +156,17 @@ class CommandExecutor {
           
         case 'clear-terminal':
           result = this.handleClearTerminal(commandResult, context);
+          break;
+          
+        case 'set-speed':
+        case 'set-frequency':
+        case 'set-effects':
+        case 'set-volume':
+        case 'toggle-audio':
+        case 'export-config':
+        case 'import-config':
+        case 'reset-settings':
+          result = await this.handleSettingsCommand(commandResult, context);
           break;
           
         case 'display-help':
@@ -414,6 +429,310 @@ class CommandExecutor {
   }
 
   /**
+   * Handle settings-related commands
+   * @param {Object} commandResult - Command result from parser
+   * @param {Object} context - Execution context
+   * @returns {Promise<Object>} Settings command result
+   */
+  async handleSettingsCommand(commandResult, context) {
+    try {
+      const { action, data } = commandResult;
+      
+      switch (action) {
+        case 'set-speed':
+          return this.handleSpeedCommand(data);
+          
+        case 'set-frequency':
+          return this.handleFrequencyCommand(data);
+          
+        case 'set-effects':
+          return this.handleEffectsCommand(data);
+          
+        case 'set-volume':
+          return this.handleVolumeCommand(data);
+          
+        case 'toggle-audio':
+          return this.handleAudioToggleCommand(data);
+          
+        case 'export-config':
+          return this.handleExportCommand();
+          
+        case 'import-config':
+          return this.handleImportCommand(data);
+          
+        case 'reset-settings':
+          return this.handleResetCommand();
+          
+        default:
+          return {
+            success: false,
+            message: `Unknown settings command: ${action}`,
+            suggestion: 'Use !help to see available commands'
+          };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: `Settings command failed: ${error.message}`,
+        suggestion: 'Please check your command syntax and try again'
+      };
+    }
+  }
+
+  /**
+   * Handle animation speed command
+   * @param {Object} data - Command data
+   * @returns {Object} Command result
+   */
+  handleSpeedCommand(data) {
+    const speed = parseFloat(data.speed);
+    
+    if (isNaN(speed) || speed < 0.1 || speed > 5.0) {
+      return {
+        success: false,
+        message: 'Invalid speed value. Use a number between 0.1 and 5.0',
+        suggestion: 'Example: !speed 1.5'
+      };
+    }
+    
+    const success = this.settingsManager.setSetting('visual.animationSpeed', speed);
+    
+    if (success) {
+      return {
+        success: true,
+        message: `Animation speed set to ${speed}x`,
+        action: 'set-speed',
+        data: { speed }
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Failed to update animation speed',
+        suggestion: 'Please try again'
+      };
+    }
+  }
+
+  /**
+   * Handle message frequency command
+   * @param {Object} data - Command data
+   * @returns {Object} Command result
+   */
+  handleFrequencyCommand(data) {
+    const frequency = parseInt(data.frequency);
+    
+    if (isNaN(frequency) || frequency < 5 || frequency > 300) {
+      return {
+        success: false,
+        message: 'Invalid frequency value. Use a number between 5 and 300 seconds',
+        suggestion: 'Example: !frequency 30'
+      };
+    }
+    
+    const success = this.settingsManager.setSetting('messages.frequency', frequency);
+    
+    if (success) {
+      return {
+        success: true,
+        message: `Message frequency set to ${frequency} seconds`,
+        action: 'set-frequency',
+        data: { frequency }
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Failed to update message frequency',
+        suggestion: 'Please try again'
+      };
+    }
+  }
+
+  /**
+   * Handle effects intensity command
+   * @param {Object} data - Command data
+   * @returns {Object} Command result
+   */
+  handleEffectsCommand(data) {
+    const intensity = data.intensity.toLowerCase();
+    const validIntensities = ['high', 'medium', 'low', 'off'];
+    
+    if (!validIntensities.includes(intensity)) {
+      return {
+        success: false,
+        message: 'Invalid effects intensity. Use: high, medium, low, or off',
+        suggestion: 'Example: !effects medium'
+      };
+    }
+    
+    const success = this.settingsManager.setSetting('visual.effectsIntensity', intensity);
+    
+    if (success) {
+      return {
+        success: true,
+        message: `Effects intensity set to ${intensity}`,
+        action: 'set-effects',
+        data: { intensity }
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Failed to update effects intensity',
+        suggestion: 'Please try again'
+      };
+    }
+  }
+
+  /**
+   * Handle volume command
+   * @param {Object} data - Command data
+   * @returns {Object} Command result
+   */
+  handleVolumeCommand(data) {
+    const { volume } = data;
+    
+    if (volume === 'mute') {
+      const success = this.settingsManager.setSetting('audio.muted', true);
+      return {
+        success,
+        message: success ? 'Audio muted' : 'Failed to mute audio',
+        action: 'set-volume',
+        data: { muted: true }
+      };
+    }
+    
+    if (volume === 'unmute') {
+      const success = this.settingsManager.setSetting('audio.muted', false);
+      return {
+        success,
+        message: success ? 'Audio unmuted' : 'Failed to unmute audio',
+        action: 'set-volume',
+        data: { muted: false }
+      };
+    }
+    
+    const volumeLevel = parseFloat(volume);
+    
+    if (isNaN(volumeLevel) || volumeLevel < 0 || volumeLevel > 1) {
+      return {
+        success: false,
+        message: 'Invalid volume level. Use a number between 0.0 and 1.0, or "mute"/"unmute"',
+        suggestion: 'Example: !volume 0.5 or !volume mute'
+      };
+    }
+    
+    const success = this.settingsManager.setSetting('audio.volume', volumeLevel);
+    
+    if (success) {
+      return {
+        success: true,
+        message: `Volume set to ${Math.round(volumeLevel * 100)}%`,
+        action: 'set-volume',
+        data: { volume: volumeLevel }
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Failed to update volume',
+        suggestion: 'Please try again'
+      };
+    }
+  }
+
+  /**
+   * Handle audio toggle command
+   * @param {Object} data - Command data
+   * @returns {Object} Command result
+   */
+  handleAudioToggleCommand(data) {
+    const currentEnabled = this.settingsManager.getSetting('audio.enabled');
+    const newEnabled = !currentEnabled;
+    
+    const success = this.settingsManager.setSetting('audio.enabled', newEnabled);
+    
+    if (success) {
+      return {
+        success: true,
+        message: `Audio ${newEnabled ? 'enabled' : 'disabled'}`,
+        action: 'toggle-audio',
+        data: { enabled: newEnabled }
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Failed to toggle audio',
+        suggestion: 'Please try again'
+      };
+    }
+  }
+
+  /**
+   * Handle export configuration command
+   * @returns {Object} Export result
+   */
+  handleExportCommand() {
+    const result = this.settingsManager.exportConfig();
+    
+    if (result.success) {
+      return {
+        success: true,
+        message: result.message,
+        action: 'export-config',
+        data: {
+          configString: result.configString,
+          size: result.size
+        }
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message,
+        suggestion: 'Please try again or check system status'
+      };
+    }
+  }
+
+  /**
+   * Handle import configuration command
+   * @param {Object} data - Command data
+   * @returns {Object} Import result
+   */
+  handleImportCommand(data) {
+    const { configString } = data;
+    
+    if (!configString) {
+      return {
+        success: false,
+        message: 'No configuration string provided',
+        suggestion: 'Example: !import <config-string>'
+      };
+    }
+    
+    const result = this.settingsManager.importConfig(configString);
+    
+    return {
+      success: result.success,
+      message: result.message,
+      action: 'import-config',
+      data: result.success ? { imported: true } : { error: result.message }
+    };
+  }
+
+  /**
+   * Handle reset settings command
+   * @returns {Object} Reset result
+   */
+  handleResetCommand() {
+    const result = this.settingsManager.resetToDefaults();
+    
+    return {
+      success: result.success,
+      message: result.message,
+      action: 'reset-settings',
+      data: result.success ? { reset: true } : { error: result.message }
+    };
+  }
+
+  /**
    * Format character name for display
    * @param {string} characterId - Character ID
    * @returns {string} Formatted display name
@@ -451,14 +770,18 @@ Commands Executed: ${this.executionHistory.length}${queueInfo}`;
    * @returns {string} Formatted config message
    */
   formatSystemConfig(currentState) {
+    const settings = this.settingsManager.getSettingsSummary();
+    
     return `System Configuration:
-Character: ${currentState.currentCharacter || 'Corporate AI'}
-Messages: ${currentState.messageStatus || 'Active'}
-Theme: Matrix Green Terminal
-Auto-hide: Enabled (2s delay)
-Animations: Enabled
-Command Queue: ${this.maxQueueSize} max
-Rate Limit: ${this.minExecutionInterval}ms`;
+Character: ${currentState.currentCharacter || settings.system.currentCharacter}
+Messages: ${currentState.messageStatus || 'Active'} (${settings.customization.messageFrequency}s)
+Audio: ${settings.customization.audioEnabled ? 'Enabled' : 'Disabled'} (${Math.round(settings.customization.audioVolume * 100)}%)
+Animation Speed: ${settings.customization.animationSpeed}x
+Effects: ${settings.customization.effectsIntensity}
+Auto-save: ${settings.system.autoSave ? 'Enabled' : 'Disabled'}
+Performance Mode: ${settings.system.performanceMode}
+High Contrast: ${settings.accessibility.highContrast ? 'On' : 'Off'}
+Reduced Motion: ${settings.accessibility.reducedMotion ? 'On' : 'Off'}`;
   }
 
   /**
@@ -468,6 +791,8 @@ Rate Limit: ${this.minExecutionInterval}ms`;
    */
   formatDebugInfo(currentState) {
     const memoryUsage = this.getMemoryUsage();
+    const performanceMetrics = this.settingsManager.getPerformanceMetrics();
+    const systemInfo = this.settingsManager.getSystemInfo();
     
     return `Debug Information:
 Terminal: CommandExecutor v1.0
@@ -476,6 +801,10 @@ Queue Length: ${this.commandQueue.length}/${this.maxQueueSize}
 Execution History: ${this.executionHistory.length}/${this.maxHistorySize}
 Cache Status: ${this.isCacheValid() ? 'Valid' : 'Expired'}
 Memory Usage: ${memoryUsage}
+Performance: ${performanceMetrics.fps} FPS, ${performanceMetrics.memoryUsage}MB
+Browser: ${systemInfo.userAgent.split(' ')[0]}
+Viewport: ${systemInfo.viewport.width}x${systemInfo.viewport.height}
+Settings Version: ${systemInfo.version}
 Last Execution: ${this.lastExecutionTime ? new Date(this.lastExecutionTime).toLocaleTimeString() : 'None'}`;
   }
 

@@ -5,6 +5,7 @@ import CharacterHost from '../components/CharacterHost';
 import TerminalInterface from '../components/TerminalInterface';
 import MessageController from '../components/MessageController';
 import ModeSwitchControllerComponent from '../components/ModeSwitchController';
+import TypingEffect from '../components/TypingEffect';
 
 export default function Home() {
   const { currentMode, globalConfig, setCurrentMode, messagesPaused, setMessagesPaused } = useAppContext();
@@ -148,12 +149,32 @@ export default function Home() {
             <main id="main-content" className="main-content" role="main">
         {/* Header Section */}
         <header className="app-header" role="banner">
-          <h1 className="app-title" id="app-title">VibeScreen</h1>
-          <p className="app-subtitle" aria-describedby="app-title">
-            Ambient AI Companion for Second Monitors
+          <h1 className="app-title phosphor-glow" id="app-title">
+            <TypingEffect 
+              text="VibeScreen" 
+              speed={100} 
+              delay={500}
+              cursor={true}
+              cursorChar="█"
+            />
+          </h1>
+          <p className="app-subtitle phosphor-glow-subtle" aria-describedby="app-title">
+            <TypingEffect 
+              text="Ambient AI Companion for Second Monitors" 
+              speed={30} 
+              delay={2000}
+              cursor={false}
+            />
           </p>
           <div className="hackathon-badge" role="img" aria-label="Hackathon submission badge">
-            <span className="badge-text">Kiroween 2025 • Frankenstein Category</span>
+            <span className="badge-text phosphor-glow-subtle">
+              <TypingEffect 
+                text="Kiroween 2025 • Frankenstein Category" 
+                speed={25} 
+                delay={4000}
+                cursor={false}
+              />
+            </span>
           </div>
         </header>
 

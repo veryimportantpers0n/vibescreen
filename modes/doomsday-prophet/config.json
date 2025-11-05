@@ -1,0 +1,18 @@
+{
+  "id": "doomsday-prophet",
+  "name": "Doomsday Prophet",
+  "popupStyle": "overlay",
+  "minDelaySeconds": 20,
+  "maxDelaySeconds": 60,
+  "messageProbabilities": {
+    "apocalyptic": 0.7,
+    "cliche": 0.2,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#330000",
+    "ambientSpeed": 0.3,
+    "primaryColor": "#ff0000",
+    "ominousIntensity": 0.7
+  }
+}

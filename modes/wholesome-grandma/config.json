@@ -1,0 +1,19 @@
+{
+  "id": "wholesome-grandma",
+  "name": "Wholesome Grandma",
+  "popupStyle": "speechBubble",
+  "popupPosition": "below",
+  "minDelaySeconds": 30,
+  "maxDelaySeconds": 60,
+  "messageProbabilities": {
+    "nurturing": 0.7,
+    "cliche": 0.2,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#8B4513",
+    "ambientSpeed": 0.2,
+    "primaryColor": "#FFA500",
+    "warmth": 0.9
+  }
+}

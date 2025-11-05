@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Effects Test</title>
+    <style>
+        /* Import terminal effects styles */
+        @import url('../../styles/terminal-effects.css');
+        
+        /* Basic setup */
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+        
+        /* CSS Custom Properties for testing */
+        :root {
+            --matrix-green: #00ff00;
+            --matrix-green-dim: #00cc00;
+            --matrix-green-dark: #008800;
+            --matrix-green-bright: #66ff66;
+            --phosphor-glow: rgba(0, 255, 0, 0.5);
+            --phosphor-glow-bright: rgba(0, 255, 0, 0.8);
+            --terminal-black: rgba(0, 0, 0, 0.95);
+            --scan-line-opacity: 0.02;
+            --crt-flicker-intensity: 0.05;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid var(--matrix-green);
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid var(--matrix-green-dark);
+            border-radius: 4px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--matrix-green-bright);
+        }
+        
+        .demo-text {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 2px;
+        }
+        
+        .terminal-demo {
+            background: var(--terminal-black);
+            border: 2px solid var(--matrix-green);
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Terminal Effects -->
+    <div class="scan-lines" aria-hidden="true"></div>
+    <div class="crt-screen" aria-hidden="true"></div>
+    
+    <div class="test-container">
+        <h1 class="phosphor-glow">Terminal Effects Test Suite</h1>
+        
+        <!-- Phosphor Glow Effects Test -->
+        <div class="test-section">
+            <h2 class="test-title">1. Phosphor Glow Effects</h2>
+            <div class="demo-text phosphor-glow">Standard phosphor glow text</div>
+            <div class="demo-text phosphor-glow-bright">Bright phosphor glow text</div>
+            <div class="demo-text phosphor-glow-subtle">Subtle phosphor glow text</div>
+        </div>
+        
+        <!-- Cursor Effects Test -->
+        <div class="test-section">
+            <h2 class="test-title">2. Cursor Effects</h2>
+            <div class="demo-text">
+                <span>Terminal prompt</span>
+                <span class="terminal-cursor"></span>
+            </div>
+            <div class="demo-text">
+                <span>Block cursor</span>
+                <span class="terminal-cursor-block"></span>
+            </div>
+            <div class="demo-text">
+                <span>Underscore cursor</span>
+                <span class="terminal-cursor-underscore"></span>
+            </div>
+            <div class="demo-text">
+                <span>Pipe cursor</span>
+                <span class="terminal-cursor-pipe"></span>
+            </div>
+        </div>
+        
+        <!-- Typing Effects Test -->
+        <div class="test-section">
+            <h2 class="test-title">3. Typing Effects</h2>
+            <div class="demo-text typing-effect">This text should appear to be typing...</div>
+            <div class="demo-text typing-effect-slow">This text types slowly...</div>
+            <div class="demo-text typing-effect-fast">This text types quickly...</div>
+        </div>
+        
+        <!-- Terminal Container Test -->
+        <div class="test-section">
+            <h2 class="test-title">4. Terminal Container</h2>
+            <div class="terminal-demo terminal-container-enhanced">
+                <div class="phosphor-glow">
+                    > System initialized successfully
+                </div>
+                <div class="phosphor-glow-subtle">
+                    > Loading terminal effects...
+                </div>
+                <div class="phosphor-glow">
+                    > Ready for input<span class="terminal-cursor"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Text Test */
+        <div class="test-section">
+            <h2 class="test-title">5. Enhanced Terminal Text</h2>
+            <div class="demo-text">
+                <span class="terminal-text-enhanced phosphor-glow">Enhanced terminal text</span>
+            </div>
+            <div class="demo-text">
+                <span class="terminal-text-enhanced terminal-text-bold phosphor-glow-bright">Bold terminal text</span>
+            </div>
+            <div class="demo-text">
+                <span class="terminal-text-enhanced terminal-text-dim phosphor-glow-subtle">Dim terminal text</span>
+            </div>
+        </div>
+        
+        <!-- Accessibility Test -->
+        <div class="test-section">
+            <h2 class="test-title">6. Accessibility Test</h2>
+            <p>The effects above should automatically disable if you have:</p>
+            <ul>
+                <li>Reduced motion preferences enabled</li>
+                <li>High contrast mode enabled</li>
+                <li>Forced colors mode enabled</li>
+            </ul>
+            <p>Test by enabling these accessibility features in your system settings.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Test script to verify effects are working
+        console.log('Terminal Effects Test loaded');
+        
+        // Check if CSS custom properties are supported
+        if (CSS.supports('color', 'var(--matrix-green)')) {
+            console.log('✅ CSS Custom Properties supported');
+        } else {
+            console.log('❌ CSS Custom Properties not supported');
+        }
+        
+        // Check if animations are supported
+        if (CSS.supports('animation', 'phosphor-pulse 2s ease-in-out infinite alternate')) {
+            console.log('✅ CSS Animations supported');
+        } else {
+            console.log('❌ CSS Animations not supported');
+        }
+        
+        // Check accessibility preferences
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const highContrast = window.matchMedia('(prefers-contrast: high)').matches;
+        
+        console.log('Accessibility preferences:');
+        console.log('- Reduced motion:', reducedMotion);
+        console.log('- High contrast:', highContrast);
+        
+        if (reducedMotion) {
+            document.body.classList.add('reduced-motion');
+            console.log('🔧 Reduced motion mode active - animations disabled');
+        }
+        
+        if (highContrast) {
+            document.body.classList.add('high-contrast');
+            console.log('🔧 High contrast mode active - effects modified');
+        }
+        
+        // Test terminal effects visibility
+        const scanLines = document.querySelector('.scan-lines');
+        const crtScreen = document.querySelector('.crt-screen');
+        
+        if (scanLines && crtScreen) {
+            console.log('✅ Global terminal effects elements found');
+        } else {
+            console.log('❌ Global terminal effects elements missing');
+        }
+        
+        // Test phosphor glow elements
+        const phosphorElements = document.querySelectorAll('.phosphor-glow, .phosphor-glow-bright, .phosphor-glow-subtle');
+        console.log(`✅ Found ${phosphorElements.length} phosphor glow elements`);
+        
+        // Test cursor elements
+        const cursorElements = document.querySelectorAll('[class*="terminal-cursor"]');
+        console.log(`✅ Found ${cursorElements.length} cursor elements`);
+        
+        console.log('Terminal Effects Test complete - check visual effects above');
+    </script>
+</body>
+</html>

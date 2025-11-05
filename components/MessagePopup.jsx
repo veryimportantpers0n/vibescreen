@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { getAccessibilityManager, announce, announceStatus } from '../utils/accessibilityManager';
 
 /**
  * MessagePopup Component
@@ -44,10 +45,19 @@ const MessagePopup = React.forwardRef(({
     return window.matchMedia('(prefers-contrast: high)').matches;
   }, []);
 
-  // Accessibility: Announce message to screen readers
+  // Enhanced accessibility: Announce message to screen readers using accessibility manager
   const announceToScreenReader = useCallback((text, priority = 'polite') => {
+    if (!text) return;
+    
+    // Use accessibility manager for consistent announcements
+    if (priority === 'assertive') {
+      announce(text, 'assertive');
+    } else {
+      announce(text, 'polite');
+    }
+    
+    // Fallback to local announcement element for compatibility
     if (!announcementRef.current) {
-      // Create announcement element if it doesn't exist
       const announcer = document.createElement('div');
       announcer.setAttribute('aria-live', priority);
       announcer.setAttribute('aria-atomic', 'true');
@@ -131,75 +141,109 @@ const MessagePopup = React.forwardRef(({
     return modePositioning[mode] || { style: 'overlay', position: 'overlay' };
   };
 
-  // Calculate position based on character position and style
+  // Enhanced responsive position calculation
   const calculatePosition = () => {
     const modeConfig = getModePositioning(mode);
     const effectiveStyle = style || modeConfig.style;
     const effectivePosition = position || modeConfig.position;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const isMobile = viewportWidth <= 768;
+    const isSmallMobile = viewportWidth <= 480;
 
     if (effectiveStyle === 'overlay') {
-      // Center screen positioning for overlay style
+      // Enhanced overlay positioning with responsive adjustments
+      const topOffset = isMobile ? '45%' : '50%';
       return {
         position: 'fixed',
-        top: '50%',
+        top: topOffset,
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        zIndex: 'var(--z-modal)'
+        zIndex: 'var(--z-modal)',
+        // Ensure proper spacing from edges on mobile
+        maxWidth: isMobile ? 'calc(100vw - 20px)' : 'none',
+        margin: isMobile ? '0 10px' : '0'
       };
     }
 
-    // Speech bubble positioning relative to character
-    const baseOffsets = {
-      above: { x: 0, y: -120 },
-      below: { x: 0, y: 120 },
-      left: { x: -200, y: -60 },
-      right: { x: 200, y: -60 }
-    };
+    // Enhanced speech bubble positioning with mobile adaptations
+    let baseOffsets;
+    
+    if (isMobile) {
+      // On mobile, convert side positions to top/bottom for better UX
+      baseOffsets = {
+        above: { x: 0, y: -100 },
+        below: { x: 0, y: 100 },
+        left: { x: 0, y: -100 }, // Convert to above on mobile
+        right: { x: 0, y: 100 }  // Convert to below on mobile
+      };
+    } else {
+      // Desktop/tablet positioning
+      const offsetScale = viewportWidth > 1440 ? 1.2 : viewportWidth > 1024 ? 1.1 : 1.0;
+      baseOffsets = {
+        above: { x: 0, y: -120 * offsetScale },
+        below: { x: 0, y: 120 * offsetScale },
+        left: { x: -200 * offsetScale, y: -60 * offsetScale },
+        right: { x: 200 * offsetScale, y: -60 * offsetScale }
+      };
+    }
 
     const offset = baseOffsets[effectivePosition] || baseOffsets.above;
     
-    // Calculate viewport boundaries
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const messageWidth = 300;
-    const messageHeight = 100;
+    // Responsive message dimensions
+    const messageWidth = isSmallMobile ? 240 : isMobile ? 300 : viewportWidth > 1024 ? 400 : 350;
+    const messageHeight = isSmallMobile ? 80 : isMobile ? 100 : 120;
     
     let x = characterPosition.x + offset.x;
     let y = characterPosition.y + offset.y;
     
-    // Advanced boundary checking with fallback positioning
+    // On mobile, center horizontally for converted positions
+    if (isMobile && (effectivePosition === 'left' || effectivePosition === 'right')) {
+      x = viewportWidth / 2 - messageWidth / 2;
+    }
+    
+    // Advanced boundary checking with responsive fallback positioning
     const safePosition = calculateSafePosition(
       { x, y }, 
       characterPosition, 
       { width: viewportWidth, height: viewportHeight },
       { width: messageWidth, height: messageHeight },
-      effectivePosition
+      effectivePosition,
+      isMobile
     );
 
     return {
       position: 'fixed',
       left: `${safePosition.x}px`,
       top: `${safePosition.y}px`,
-      zIndex: 'var(--z-ui)'
+      zIndex: 'var(--z-ui)',
+      // Enhanced responsive constraints
+      maxWidth: isMobile ? 'calc(100vw - 20px)' : 'none',
+      margin: isMobile ? '0 10px' : '0'
     };
   };
 
-  // Advanced position calculation with viewport boundary checking and fallback positioning
-  const calculateSafePosition = (basePosition, characterPos, viewport, messageSize, preferredPosition) => {
+  // Enhanced position calculation with responsive viewport boundary checking
+  const calculateSafePosition = (basePosition, characterPos, viewport, messageSize, preferredPosition, isMobile = false) => {
     let { x, y } = basePosition;
     const { width: vw, height: vh } = viewport;
     const { width: mw, height: mh } = messageSize;
     
-    // Safety margins
-    const margin = 20;
-    const modeSelectorHeight = 120; // Account for bottom mode selector
+    // Responsive safety margins
+    const margin = isMobile ? 10 : 20;
+    const topMargin = Math.max(margin, window.env?.safeAreaInsetTop || 0);
+    const bottomMargin = Math.max(margin, window.env?.safeAreaInsetBottom || 0);
     
-    // Check if current position is within safe bounds
+    // Account for UI elements with responsive heights
+    const modeSelectorHeight = isMobile ? 80 : 120;
+    const headerHeight = isMobile ? 60 : 80;
+    
+    // Enhanced boundary checking with responsive considerations
     const isWithinBounds = (testX, testY) => {
       return testX >= margin && 
              testX + mw <= vw - margin && 
-             testY >= margin && 
-             testY + mh <= vh - modeSelectorHeight;
+             testY >= topMargin + headerHeight && 
+             testY + mh <= vh - bottomMargin - modeSelectorHeight;
     };
     
     // If current position is safe, use it
@@ -207,17 +251,33 @@ const MessagePopup = React.forwardRef(({
       return { x, y };
     }
     
-    // Try alternative positions if current one doesn't fit
+    // Enhanced alternative positions with responsive scaling
+    const offsetScale = isMobile ? 0.8 : vw > 1440 ? 1.2 : 1.0;
     const alternativePositions = {
-      above: { x: characterPos.x, y: characterPos.y - 120 },
-      below: { x: characterPos.x, y: characterPos.y + 120 },
-      left: { x: characterPos.x - 200, y: characterPos.y - 60 },
-      right: { x: characterPos.x + 200, y: characterPos.y - 60 }
+      above: { 
+        x: isMobile ? vw / 2 - mw / 2 : characterPos.x - mw / 2, 
+        y: characterPos.y - (120 * offsetScale) 
+      },
+      below: { 
+        x: isMobile ? vw / 2 - mw / 2 : characterPos.x - mw / 2, 
+        y: characterPos.y + (120 * offsetScale) 
+      },
+      left: { 
+        x: characterPos.x - (200 * offsetScale), 
+        y: characterPos.y - (60 * offsetScale) 
+      },
+      right: { 
+        x: characterPos.x + (200 * offsetScale), 
+        y: characterPos.y - (60 * offsetScale) 
+      }
     };
     
-    // Try each alternative position
-    const positionOrder = [preferredPosition, 'above', 'right', 'below', 'left'];
+    // Responsive position priority order
+    const positionOrder = isMobile 
+      ? [preferredPosition, 'above', 'below', 'right', 'left']
+      : [preferredPosition, 'above', 'right', 'below', 'left'];
     
+    // Try each alternative position
     for (const pos of positionOrder) {
       if (alternativePositions[pos]) {
         const altPos = alternativePositions[pos];
@@ -227,11 +287,26 @@ const MessagePopup = React.forwardRef(({
       }
     }
     
-    // If no alternative works, force into safe bounds
-    x = Math.max(margin, Math.min(x, vw - mw - margin));
-    y = Math.max(margin, Math.min(y, vh - mh - modeSelectorHeight));
+    // Enhanced fallback positioning with responsive constraints
+    const safeX = Math.max(margin, Math.min(x, vw - mw - margin));
+    const safeY = Math.max(
+      topMargin + headerHeight, 
+      Math.min(y, vh - mh - bottomMargin - modeSelectorHeight)
+    );
     
-    return { x, y };
+    // Final mobile-specific adjustments
+    if (isMobile) {
+      // Ensure message doesn't overlap with virtual keyboard area
+      const keyboardHeight = vh > 500 ? 0 : 200; // Estimate keyboard height on small screens
+      const adjustedY = Math.min(safeY, vh - mh - bottomMargin - modeSelectorHeight - keyboardHeight);
+      
+      return { 
+        x: Math.max(margin, Math.min(safeX, vw - mw - margin)), 
+        y: Math.max(topMargin + headerHeight, adjustedY) 
+      };
+    }
+    
+    return { x: safeX, y: safeY };
   };
 
   // Calculate tail position to point toward character

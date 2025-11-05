@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Commands Integration Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .info { color: #ffff00; }
+        .command {
+            background: #001100;
+            padding: 5px;
+            margin: 5px 0;
+            border-left: 3px solid #00ff00;
+        }
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #005500;
+        }
+        #output {
+            background: #001100;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #00ff00;
+            min-height: 200px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Advanced Commands Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>Command Testing Interface</h2>
+        <p class="info">This test validates the advanced terminal commands work correctly.</p>
+        
+        <div>
+            <button onclick="testCommand('!help')">Test !help</button>
+            <button onclick="testCommand('!speed 1.5')">Test !speed</button>
+            <button onclick="testCommand('!frequency 45')">Test !frequency</button>
+            <button onclick="testCommand('!effects high')">Test !effects</button>
+            <button onclick="testCommand('!volume 0.7')">Test !volume</button>
+            <button onclick="testCommand('!mute')">Test !mute</button>
+            <button onclick="testCommand('!performance')">Test !performance</button>
+            <button onclick="testCommand('!export')">Test !export</button>
+            <button onclick="testCommand('!config')">Test !config</button>
+            <button onclick="testCommand('!debug')">Test !debug</button>
+        </div>
+        
+        <div>
+            <button onclick="testInvalidCommands()">Test Invalid Commands</button>
+            <button onclick="testExportImport()">Test Export/Import</button>
+            <button onclick="testReset()">Test Reset</button>
+            <button onclick="clearOutput()">Clear Output</button>
+        </div>
+        
+        <div id="output"></div>
+    </div>
+
+    <script type="module">
+        // Import the CommandParser
+        import { CommandParser } from '../../components/CommandParser.jsx';
+        
+        // Initialize parser
+        const parser = new CommandParser();
+        const output = document.getElementById('output');
+        
+        // Mock context for testing
+        const mockContext = {
+            currentCharacter: 'Corporate AI',
+            messageStatus: 'Active',
+            onCharacterSwitch: (character) => log(`🔄 Character switched to: ${character}`, 'info'),
+            onMessageControl: (action) => log(`📨 Message control: ${action}`, 'info'),
+            onSettingChanged: (setting, value) => log(`⚙️ Setting changed: ${setting} = ${value}`, 'info'),
+            onAudioSettingChanged: (setting, value) => log(`🔊 Audio setting: ${setting} = ${value}`, 'info'),
+            onSettingsImported: (settings) => log(`📥 Settings imported successfully`, 'success'),
+            onSettingsReset: (settings) => log(`🔄 Settings reset to defaults`, 'success')
+        };
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function testCommand(command) {
+            log(`> ${command}`, 'command');
+            
+            try {
+                const result = parser.parseAndExecute(command, mockContext);
+                
+                if (result.success) {
+                    log(`✅ SUCCESS: ${result.message}`, 'success');
+                    if (result.action) {
+                        log(`   Action: ${result.action}`, 'info');
+                    }
+                    if (result.data) {
+                        log(`   Data: ${JSON.stringify(result.data, null, 2)}`, 'info');
+                    }
+                } else {
+                    log(`❌ ERROR: ${result.message}`, 'error');
+                    if (result.suggestion) {
+                        log(`   Suggestion: ${result.suggestion}`, 'info');
+                    }
+                }
+            } catch (error) {
+                log(`💥 EXCEPTION: ${error.message}`, 'error');
+            }
+            
+            log('', 'info'); // Empty line for spacing
+        }
+        
+        function testInvalidCommands() {
+            log('=== Testing Invalid Commands ===', 'info');
+            
+            const invalidCommands = [
+                '!speed 10',      // Too high
+                '!frequency 500', // Too high
+                '!effects maximum', // Invalid level
+                '!volume 2.0',    // Too high
+                '!import invalid' // Invalid config
+            ];
+            
+            invalidCommands.forEach(cmd => {
+                setTimeout(() => testCommand(cmd), 100);
+            });
+        }
+        
+        function testExportImport() {
+            log('=== Testing Export/Import ===', 'info');
+            
+            // First set some custom values
+            testCommand('!speed 2.5');
+            testCommand('!frequency 60');
+            testCommand('!effects low');
+            
+            // Export configuration
+            setTimeout(() => {
+                const exportResult = parser.parseAndExecute('!export', mockContext);
+                if (exportResult.success && exportResult.data.configString) {
+                    log('📤 Export successful, testing import...', 'success');
+                    
+                    // Reset first
+                    setTimeout(() => {
+                        testCommand('!reset');
+                        
+                        // Then import
+                        setTimeout(() => {
+                            testCommand(`!import ${exportResult.data.configString}`);
+                        }, 500);
+                    }, 500);
+                }
+            }, 500);
+        }
+        
+        function testReset() {
+            log('=== Testing Reset Functionality ===', 'info');
+            
+            // Set some values first
+            testCommand('!speed 3.0');
+            testCommand('!effects off');
+            testCommand('!volume 0.9');
+            
+            // Show current config
+            setTimeout(() => {
+                testCommand('!config');
+                
+                // Reset
+                setTimeout(() => {
+                    testCommand('!reset');
+                    
+                    // Show config after reset
+                    setTimeout(() => {
+                        testCommand('!config');
+                    }, 500);
+                }, 1000);
+            }, 500);
+        }
+        
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+        
+        // Make functions global for button onclick
+        window.testCommand = testCommand;
+        window.testInvalidCommands = testInvalidCommands;
+        window.testExportImport = testExportImport;
+        window.testReset = testReset;
+        window.clearOutput = clearOutput;
+        
+        // Initial test
+        log('🎯 Advanced Commands Integration Test Ready!', 'success');
+        log('Click buttons above to test different commands.', 'info');
+        log('', 'info');
+        
+        // Test basic functionality on load
+        setTimeout(() => {
+            log('=== Running Initial Tests ===', 'info');
+            testCommand('!help');
+        }, 1000);
+    </script>
+</body>
+</html>

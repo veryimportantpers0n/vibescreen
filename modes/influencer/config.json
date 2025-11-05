@@ -1,0 +1,18 @@
+{
+  "id": "influencer",
+  "name": "Influencer",
+  "popupStyle": "overlay",
+  "minDelaySeconds": 10,
+  "maxDelaySeconds": 30,
+  "messageProbabilities": {
+    "social": 0.6,
+    "exaggeration": 0.3,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#ffccff",
+    "ambientSpeed": 1.0,
+    "primaryColor": "#ff69b4",
+    "sparkleIntensity": 0.8
+  }
+}

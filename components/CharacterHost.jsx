@@ -65,7 +65,7 @@ const CharacterHost = ({
   }, [onSpeak, triggerSpeakAnimation]);
 
   /**
-   * Responsive canvas sizing
+   * Enhanced responsive canvas sizing with breakpoint awareness
    */
   const updateCanvasSize = useCallback(() => {
     if (resizeTimeoutRef.current) {
@@ -73,14 +73,47 @@ const CharacterHost = ({
     }
 
     resizeTimeoutRef.current = setTimeout(() => {
-      // Character canvas should be smaller and positioned in corner
-      const baseSize = Math.min(window.innerWidth * 0.15, window.innerHeight * 0.25);
-      const size = Math.max(150, Math.min(250, baseSize)); // Clamp between 150-250px
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const isLandscape = viewportWidth > viewportHeight;
+      
+      let size;
+      
+      // Enhanced responsive sizing based on breakpoints
+      if (viewportWidth <= 360) {
+        // Extra small mobile
+        size = Math.max(60, Math.min(80, viewportWidth * 0.12));
+      } else if (viewportWidth <= 480) {
+        // Small mobile
+        size = Math.max(70, Math.min(90, viewportWidth * 0.14));
+      } else if (viewportWidth <= 768) {
+        // Mobile
+        size = isLandscape 
+          ? Math.max(80, Math.min(100, viewportWidth * 0.12))
+          : Math.max(80, Math.min(120, viewportWidth * 0.15));
+      } else if (viewportWidth <= 1024) {
+        // Tablet
+        size = Math.max(140, Math.min(180, viewportWidth * 0.16));
+      } else if (viewportWidth <= 1440) {
+        // Desktop
+        size = Math.max(160, Math.min(200, viewportWidth * 0.12));
+      } else {
+        // Large desktop
+        size = Math.max(200, Math.min(240, viewportWidth * 0.10));
+      }
+      
+      // Ensure character doesn't take up too much screen real estate
+      const maxSize = Math.min(
+        viewportWidth * 0.25,
+        viewportHeight * 0.30
+      );
+      
+      size = Math.min(size, maxSize);
       
       setCanvasSize({ width: size, height: size });
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📐 Character canvas resized: ${size}x${size}`);
+        console.log(`📐 Character canvas resized: ${size}x${size} (viewport: ${viewportWidth}x${viewportHeight})`);
       }
     }, 100);
   }, []);

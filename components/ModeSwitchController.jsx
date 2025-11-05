@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { useThemeManager } from '../utils/useThemeManager.js';
 
 /**
  * ModeSwitchController - Coordinates mode switching between terminal commands and ModeLoader
@@ -11,6 +12,7 @@ class ModeSwitchController {
     this.onLoadingStateChange = options.onLoadingStateChange || (() => {});
     this.onError = options.onError || (() => {});
     this.getCurrentModeData = options.getCurrentModeData || (() => ({}));
+    this.themeManager = options.themeManager || null;
     
     // Current state
     this.currentMode = options.initialMode || 'corporate-ai';
@@ -50,11 +52,19 @@ class ModeSwitchController {
       'spooky': 'Spooky'
     };
 
-    // Available modes (currently implemented)
+    // Available modes (all 11 personality modes)
     this.availableModes = [
       'corporate-ai',
       'zen-monk', 
-      'chaos'
+      'chaos',
+      'emotional-damage',
+      'therapist',
+      'startup-founder',
+      'doomsday-prophet',
+      'gamer-rage',
+      'influencer',
+      'wholesome-grandma',
+      'spooky'
     ];
 
     // Bind methods
@@ -69,6 +79,13 @@ class ModeSwitchController {
    */
   setModeLoaderRef(modeLoaderRef) {
     this.modeLoaderRef = modeLoaderRef;
+  }
+
+  /**
+   * Set theme manager for dynamic theming
+   */
+  setThemeManager(themeManager) {
+    this.themeManager = themeManager;
   }
 
   /**
@@ -105,6 +122,11 @@ class ModeSwitchController {
         timestamp: Date.now(),
         success: false
       };
+
+      // Apply theme change if themeManager is available
+      if (this.themeManager) {
+        await this.themeManager.switchTheme(modeId);
+      }
 
       // Trigger mode change through callback
       if (this.onModeChange) {
@@ -333,12 +355,21 @@ const ModeSwitchControllerComponent = ({
   getCurrentModeData,
   children 
 }) => {
+  // Initialize theme manager
+  const themeManager = useThemeManager({
+    initialTheme: initialMode,
+    onThemeChange: (themeId, config) => {
+      console.log(`🎨 ModeSwitchController: Theme changed to ${config.name}`);
+    }
+  });
+
   const [controller] = useState(() => new ModeSwitchController({
     initialMode,
     onModeChange,
     onLoadingStateChange,
     onError,
-    getCurrentModeData
+    getCurrentModeData,
+    themeManager: themeManager.themeManager
   }));
 
   const [currentMode, setCurrentMode] = useState(initialMode);
@@ -356,7 +387,8 @@ const ModeSwitchControllerComponent = ({
     };
     controller.onError = onError;
     controller.getCurrentModeData = getCurrentModeData;
-  }, [controller, onModeChange, onLoadingStateChange, onError, getCurrentModeData]);
+    controller.setThemeManager(themeManager.themeManager);
+  }, [controller, onModeChange, onLoadingStateChange, onError, getCurrentModeData, themeManager]);
 
   // Update current mode when controller changes it
   useEffect(() => {
@@ -373,8 +405,10 @@ const ModeSwitchControllerComponent = ({
     clearCache: controller.clearCache,
     getValidationReport: controller.getValidationReport,
     setModeLoaderRef: controller.setModeLoaderRef,
+    setThemeManager: controller.setThemeManager,
     currentMode,
-    loadingState
+    loadingState,
+    themeManager
   };
 
   return children(controllerMethods);

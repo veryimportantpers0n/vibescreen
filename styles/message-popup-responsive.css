@@ -1,0 +1,499 @@
+/* Enhanced Responsive Message Popup Styles */
+
+/* Base responsive message popup styling */
+.message-popup {
+  /* Enhanced responsive sizing */
+  width: clamp(280px, 80vw, 400px);
+  max-width: min(400px, calc(100vw - 40px));
+  min-height: 60px;
+  
+  /* Responsive font sizing */
+  font-size: clamp(12px, 2.5vw, 14px);
+  
+  /* Enhanced positioning for different screen sizes */
+  position: fixed;
+  z-index: var(--z-modal, 300);
+  
+  /* Smooth transitions for responsive changes */
+  transition: 
+    width 0.3s ease,
+    height 0.3s ease,
+    font-size 0.3s ease,
+    transform 0.3s ease;
+}
+
+/* Tablet Portrait and Landscape (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .message-popup {
+    width: clamp(320px, 60vw, 450px);
+    max-width: min(450px, calc(100vw - 60px));
+    font-size: 14px;
+    padding: 16px 20px;
+    border-radius: 8px;
+  }
+  
+  .message-popup-content {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .message-popup-prompt {
+    font-size: 16px;
+    margin-right: 12px;
+  }
+  
+  /* Speech bubble positioning for tablets */
+  .message-popup-speechBubble {
+    width: clamp(300px, 50vw, 380px);
+  }
+  
+  .message-popup-tail {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Large Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .message-popup {
+    width: clamp(350px, 40vw, 480px);
+    max-width: 480px;
+    font-size: 15px;
+    padding: 18px 24px;
+    border-radius: 8px;
+  }
+  
+  .message-popup-content {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  
+  .message-popup-prompt {
+    font-size: 18px;
+    margin-right: 14px;
+  }
+  
+  .message-popup-speechBubble {
+    width: clamp(320px, 35vw, 420px);
+  }
+  
+  .message-popup-tail {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Mobile Portrait (max-width: 768px) */
+@media (max-width: 768px) {
+  .message-popup {
+    width: clamp(260px, 85vw, 340px);
+    max-width: calc(100vw - 20px);
+    font-size: clamp(11px, 2.8vw, 13px);
+    padding: 12px 16px;
+    border-radius: 10px;
+    
+    /* Enhanced mobile positioning */
+    margin: 0 10px;
+  }
+  
+  .message-popup-content {
+    font-size: clamp(11px, 2.8vw, 13px);
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .message-popup-prompt {
+    font-size: clamp(13px, 3vw, 15px);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  
+  /* Mobile speech bubble adaptations */
+  .message-popup-speechBubble {
+    width: clamp(240px, 80vw, 320px);
+    max-width: calc(100vw - 30px);
+  }
+  
+  /* Simplified tails for mobile */
+  .message-popup-tail {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Convert side positions to top/bottom on mobile for better UX */
+  .message-popup-position-left,
+  .message-popup-position-right {
+    /* Override positioning to use above/below on mobile */
+    position: fixed;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+  
+  .message-popup-position-left {
+    bottom: 200px;
+  }
+  
+  .message-popup-position-right {
+    top: 120px;
+  }
+  
+  /* Hide side tails on mobile, show top/bottom tails */
+  .message-popup-tail-left,
+  .message-popup-tail-right {
+    display: none;
+  }
+  
+  .message-popup-position-left .message-popup-tail {
+    display: block;
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    border-top: 8px solid var(--matrix-green);
+    border-left: 8px solid var(--matrix-green);
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+  }
+  
+  .message-popup-position-right .message-popup-tail {
+    display: block;
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-135deg);
+    border-top: 8px solid var(--matrix-green);
+    border-left: 8px solid var(--matrix-green);
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+  }
+}
+
+/* Small Mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .message-popup {
+    width: clamp(240px, 90vw, 300px);
+    max-width: calc(100vw - 16px);
+    font-size: clamp(10px, 3vw, 12px);
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin: 0 8px;
+  }
+  
+  .message-popup-content {
+    font-size: clamp(10px, 3vw, 12px);
+    line-height: 1.3;
+  }
+  
+  .message-popup-prompt {
+    font-size: clamp(12px, 3.5vw, 14px);
+    margin-right: 6px;
+  }
+  
+  .message-popup-speechBubble {
+    width: clamp(220px, 85vw, 280px);
+    max-width: calc(100vw - 20px);
+  }
+  
+  .message-popup-tail {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .message-popup {
+    width: clamp(200px, 95vw, 260px);
+    max-width: calc(100vw - 12px);
+    font-size: clamp(9px, 3.2vw, 11px);
+    padding: 8px 12px;
+    margin: 0 6px;
+  }
+  
+  .message-popup-content {
+    font-size: clamp(9px, 3.2vw, 11px);
+    line-height: 1.25;
+  }
+  
+  .message-popup-prompt {
+    font-size: clamp(11px, 3.8vw, 13px);
+    margin-right: 4px;
+  }
+}
+
+/* Landscape Mobile Optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .message-popup {
+    width: clamp(300px, 60vw, 400px);
+    max-width: calc(100vw - 40px);
+    font-size: 12px;
+    
+    /* Adjust positioning for landscape */
+    max-height: 60vh;
+  }
+  
+  .message-popup-content {
+    font-size: 12px;
+    line-height: 1.3;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+  
+  /* Compact positioning for landscape */
+  .message-popup-position-left {
+    bottom: 100px;
+  }
+  
+  .message-popup-position-right {
+    top: 80px;
+  }
+}
+
+/* Touch Device Specific Enhancements */
+@media (pointer: coarse) {
+  .message-popup {
+    /* Enhanced touch interaction */
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 255, 0, 0.1);
+    touch-action: manipulation;
+    
+    /* Larger touch targets */
+    min-height: var(--touch-target-min, 44px);
+    padding: max(12px, var(--touch-spacing-md, 12px)) max(16px, var(--touch-spacing-lg, 16px));
+  }
+  
+  .message-popup:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Enhanced touch feedback for dismissible messages */
+  .message-popup[tabindex="0"]:active {
+    background: rgba(0, 255, 0, 0.05);
+    border-color: var(--matrix-green-bright);
+  }
+}
+
+/* High DPI Display Optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .message-popup {
+    /* Sharper borders and effects */
+    border-width: 0.5px;
+    box-shadow: 
+      0 0 10px rgba(0, 255, 0, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .message-popup-tail {
+    border-width: 0.5px;
+  }
+  
+  .message-popup-content {
+    /* Enhanced text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Foldable Device Support */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .message-popup {
+    width: clamp(340px, 55vw, 420px);
+    font-size: 14px;
+  }
+  
+  .message-popup-speechBubble {
+    width: clamp(320px, 50vw, 400px);
+  }
+}
+
+/* Ultra-wide Display Support */
+@media (min-width: 1920px) {
+  .message-popup {
+    width: clamp(400px, 25vw, 600px);
+    max-width: 600px;
+    font-size: 16px;
+    padding: 20px 28px;
+  }
+  
+  .message-popup-content {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  
+  .message-popup-prompt {
+    font-size: 20px;
+    margin-right: 16px;
+  }
+}
+
+/* Message Stacking Responsive Behavior */
+.message-popup-stacked {
+  /* Enhanced stacking for different screen sizes */
+  z-index: calc(var(--z-modal, 300) + var(--stack-position, 0));
+}
+
+@media (max-width: 768px) {
+  .message-popup-stacked {
+    /* Tighter stacking on mobile */
+    margin-bottom: calc(var(--stack-position, 0) * 8px);
+  }
+  
+  .message-popup-stack-0 { transform: translateY(0); }
+  .message-popup-stack-1 { transform: translateY(-60px); }
+  .message-popup-stack-2 { transform: translateY(-120px); }
+}
+
+@media (min-width: 768px) {
+  .message-popup-stacked {
+    /* More spaced stacking on larger screens */
+    margin-bottom: calc(var(--stack-position, 0) * 12px);
+  }
+  
+  .message-popup-stack-0 { transform: translateY(0); }
+  .message-popup-stack-1 { transform: translateY(-80px); }
+  .message-popup-stack-2 { transform: translateY(-160px); }
+}
+
+/* Accessibility Enhancements for Different Screen Sizes */
+@media (max-width: 768px) {
+  .message-popup[aria-live] {
+    /* Enhanced screen reader support on mobile */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: calc(var(--z-modal, 300) + 10);
+  }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  .message-popup {
+    transition: opacity 0.1s ease;
+    transform: none !important;
+  }
+  
+  .message-popup-entering,
+  .message-popup-exiting {
+    animation: none;
+    transition: opacity 0.1s ease;
+  }
+  
+  .message-popup-stacked {
+    transform: none !important;
+    position: relative;
+    margin-bottom: 8px;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .message-popup {
+    border-width: 2px;
+    background: rgba(0, 0, 0, 0.95);
+    box-shadow: 
+      0 0 0 1px var(--matrix-green),
+      0 4px 16px rgba(0, 0, 0, 0.8);
+  }
+  
+  .message-popup-content {
+    font-weight: 600;
+    color: var(--matrix-green-bright);
+  }
+  
+  .message-popup-prompt {
+    font-weight: 800;
+    color: var(--matrix-green-bright);
+  }
+  
+  .message-popup-tail {
+    border-color: var(--matrix-green) transparent transparent transparent;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .message-popup {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+    background: white !important;
+    color: black !important;
+    border: 2px solid black !important;
+    box-shadow: none !important;
+    margin: 10px 0 !important;
+    page-break-inside: avoid;
+  }
+  
+  .message-popup-tail {
+    display: none !important;
+  }
+  
+  .message-popup-prompt {
+    color: black !important;
+  }
+  
+  .message-popup-content {
+    color: black !important;
+  }
+}
+
+/* Container Query Support (Future Enhancement) */
+@supports (container-type: inline-size) {
+  .message-popup-container {
+    container-type: inline-size;
+  }
+  
+  @container (max-width: 400px) {
+    .message-popup {
+      width: 95%;
+      font-size: 11px;
+      padding: 8px 12px;
+    }
+  }
+  
+  @container (min-width: 600px) {
+    .message-popup {
+      width: clamp(350px, 60%, 500px);
+      font-size: 15px;
+      padding: 16px 24px;
+    }
+  }
+}
+
+/* Safe Area Inset Support for Modern Devices */
+.message-popup {
+  /* Ensure messages don't overlap with device UI */
+  margin-left: max(10px, env(safe-area-inset-left, 0px));
+  margin-right: max(10px, env(safe-area-inset-right, 0px));
+  margin-top: max(10px, env(safe-area-inset-top, 0px));
+  margin-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 768px) {
+  .message-popup {
+    margin-left: max(8px, env(safe-area-inset-left, 0px));
+    margin-right: max(8px, env(safe-area-inset-right, 0px));
+    margin-top: max(8px, env(safe-area-inset-top, 0px));
+    margin-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Dynamic Viewport Units Support */
+@supports (height: 100dvh) {
+  .message-popup-overlay {
+    /* Use dynamic viewport height when available */
+    height: 100dvh;
+  }
+}
+
+@supports (width: 100dvw) {
+  .message-popup-overlay {
+    /* Use dynamic viewport width when available */
+    width: 100dvw;
+  }
+}

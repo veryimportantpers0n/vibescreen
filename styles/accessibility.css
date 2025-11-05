@@ -122,7 +122,7 @@
   }
 }
 
-/* Enhanced Focus Management */
+/* Enhanced Focus Management with Keyboard Navigation */
 .message-popup:focus {
   outline: 2px solid var(--matrix-green-bright);
   outline-offset: 2px;
@@ -150,7 +150,70 @@
     inset 0 0 25px rgba(0, 255, 0, 0.2);
 }
 
-/* Keyboard Navigation Indicators */
+/* Enhanced Keyboard Navigation for All Interactive Elements */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[tabindex]:focus,
+.interactive:focus {
+  outline: 2px solid var(--matrix-green-bright);
+  outline-offset: 2px;
+  box-shadow: 
+    0 0 0 4px rgba(0, 255, 0, 0.3),
+    0 0 15px var(--phosphor-glow);
+  position: relative;
+  z-index: calc(var(--z-ui) + 10);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+.interactive:focus-visible {
+  outline: 3px solid var(--matrix-green-bright);
+  outline-offset: 3px;
+  box-shadow: 
+    0 0 0 6px rgba(0, 255, 0, 0.4),
+    0 0 20px var(--phosphor-glow);
+}
+
+/* Skip to Content Link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--matrix-green);
+  color: var(--terminal-black);
+  padding: 8px 16px;
+  text-decoration: none;
+  font-family: var(--font-terminal);
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 9999;
+  transition: top 0.3s ease;
+  border: 2px solid var(--matrix-green-bright);
+}
+
+.skip-to-content:focus {
+  top: 6px;
+  outline: 2px solid var(--terminal-black);
+  outline-offset: 2px;
+}
+
+/* Focus Trap for Modal-like Behavior */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap:focus-within {
+  outline: 1px dashed var(--matrix-green-dim);
+  outline-offset: 4px;
+}
+
+/* Enhanced Keyboard Navigation Indicators */
 .message-popup[data-keyboard-dismissible="true"]::after {
   content: '';
   position: absolute;
@@ -173,6 +236,128 @@
     opacity: 1;
     transform: scale(1.2);
   }
+}
+
+/* Keyboard Navigation Help Overlay */
+.keyboard-help-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.keyboard-help-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.keyboard-help-content {
+  background: var(--terminal-black);
+  border: 2px solid var(--matrix-green);
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px var(--phosphor-glow);
+}
+
+.keyboard-help-title {
+  font-size: var(--font-size-xl);
+  color: var(--matrix-green-bright);
+  margin-bottom: 16px;
+  text-align: center;
+  text-shadow: var(--text-shadow-strong);
+}
+
+.keyboard-shortcuts {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid var(--matrix-green-dark);
+  border-radius: 4px;
+}
+
+.shortcut-key {
+  font-family: var(--font-terminal);
+  font-weight: bold;
+  color: var(--matrix-green-bright);
+  background: rgba(0, 255, 0, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--matrix-green-dim);
+  min-width: 80px;
+  text-align: center;
+}
+
+.shortcut-description {
+  color: var(--matrix-green);
+  flex: 1;
+  margin-left: 16px;
+  font-size: var(--font-size-sm);
+}
+
+.keyboard-help-close {
+  background: transparent;
+  border: 1px solid var(--matrix-green);
+  color: var(--matrix-green);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: var(--font-terminal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+  margin: 0 auto;
+}
+
+.keyboard-help-close:hover,
+.keyboard-help-close:focus {
+  background: var(--matrix-green-dark);
+  box-shadow: 0 0 10px var(--phosphor-glow);
+  color: var(--matrix-green-bright);
+}
+
+/* Keyboard Navigation Status Indicator */
+.keyboard-nav-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--matrix-green-dim);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--font-terminal);
+  font-size: 10px;
+  color: var(--matrix-green-dim);
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.keyboard-nav-status.active {
+  opacity: 1;
+}
+
+.keyboard-nav-status::before {
+  content: '⌨ ';
+  color: var(--matrix-green);
 }
 
 /* Container Focus Management */
@@ -252,22 +437,98 @@
   display: inline;
 }
 
-/* Screen Reader Optimizations */
-@media (speech) {
-  .message-popup-prompt {
-    /* Don't read the prompt symbol */
-    visibility: visible;
-  }
+/* Enhanced Screen Reader Optimizations */
+.message-popup-prompt {
+  /* Style for decorative prompt symbol - use aria-hidden="true" in HTML */
+  font-weight: bold;
+  color: var(--matrix-green-bright);
+}
 
-  .message-popup-tail {
-    /* Don't announce decorative elements */
-    visibility: visible;
-  }
+.message-popup-tail {
+  /* Style for decorative speech bubble tail - use aria-hidden="true" in HTML */
+  pointer-events: none;
+}
 
-  .message-popup-content {
-    /* Read content normally */
-    visibility: visible;
-  }
+.message-popup-content {
+  /* Ensure content is properly styled for screen readers - use role="text" in HTML */
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* Screen reader announcement classes */
+.sr-announcement {
+  /* For important announcements */
+  font-weight: bold;
+}
+
+.sr-status {
+  /* For status updates */
+  font-style: italic;
+}
+
+.sr-alert {
+  /* For alert messages */
+  text-transform: uppercase;
+}
+
+/* Screen Reader Live Regions */
+.sr-live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-live-polite {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-live-assertive {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Screen Reader Navigation Landmarks */
+.sr-landmark-main {
+  /* Main content landmark - use with role="main" */
+  outline: none;
+}
+
+.sr-landmark-navigation {
+  /* Navigation landmark - use with role="navigation" */
+  outline: none;
+}
+
+.sr-landmark-complementary {
+  /* Complementary content landmark - use with role="complementary" */
+  outline: none;
+}
+
+.sr-landmark-banner {
+  /* Banner landmark - use with role="banner" */
+  outline: none;
+}
+
+.sr-landmark-contentinfo {
+  /* Content info landmark - use with role="contentinfo" */
+  outline: none;
 }
 
 /* Print Accessibility */

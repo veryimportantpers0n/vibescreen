@@ -1,0 +1,226 @@
+{
+  "timestamp": "2025-11-05T13:24:14.570Z",
+  "summary": {
+    "passed": 28,
+    "failed": 0,
+    "warnings": 0,
+    "successRate": "100.0"
+  },
+  "details": [
+    {
+      "timestamp": "2025-11-05T13:24:14.560Z",
+      "type": "info",
+      "message": "Starting Terminal Effects Validation..."
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.564Z",
+      "type": "info",
+      "message": "=================================================="
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.564Z",
+      "type": "info",
+      "message": "Testing terminal-effects.css file..."
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.565Z",
+      "type": "pass",
+      "message": "✅ terminal-effects.css file exists"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.565Z",
+      "type": "pass",
+      "message": "✅ CSS custom properties defined"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.565Z",
+      "type": "pass",
+      "message": "✅ Phosphor glow classes defined"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.565Z",
+      "type": "pass",
+      "message": "✅ Cursor animation classes defined"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.565Z",
+      "type": "pass",
+      "message": "✅ Scan lines implementation present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.565Z",
+      "type": "pass",
+      "message": "✅ CRT screen effects present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.565Z",
+      "type": "pass",
+      "message": "✅ Typing effects present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "pass",
+      "message": "✅ Accessibility support present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "pass",
+      "message": "✅ Mobile optimizations present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "info",
+      "message": "Testing TerminalEffects component..."
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "pass",
+      "message": "✅ TerminalEffects.jsx file exists"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "pass",
+      "message": "✅ React component structure present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "pass",
+      "message": "✅ Accessibility detection implemented"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "pass",
+      "message": "✅ PropTypes validation present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "pass",
+      "message": "✅ Intensity levels implemented"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.566Z",
+      "type": "info",
+      "message": "Testing TypingEffect component..."
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "pass",
+      "message": "✅ TypingEffect.jsx file exists"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "pass",
+      "message": "✅ React hooks properly used"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "pass",
+      "message": "✅ Typing animation logic present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "pass",
+      "message": "✅ Accessibility features implemented"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "pass",
+      "message": "✅ Cursor blinking implemented"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "info",
+      "message": "Testing integration with existing components..."
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "pass",
+      "message": "✅ TerminalEffects imported in _app.js"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.567Z",
+      "type": "pass",
+      "message": "✅ terminal-effects.css imported in globals.css"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.568Z",
+      "type": "pass",
+      "message": "✅ Terminal interface enhanced with effects"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.568Z",
+      "type": "info",
+      "message": "Testing performance considerations..."
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.568Z",
+      "type": "pass",
+      "message": "✅ Performance optimizations present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.568Z",
+      "type": "pass",
+      "message": "✅ Reduced motion fallbacks implemented"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.568Z",
+      "type": "pass",
+      "message": "✅ Mobile performance optimizations present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.568Z",
+      "type": "info",
+      "message": "Testing accessibility compliance..."
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.569Z",
+      "type": "pass",
+      "message": "✅ High contrast mode support"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.569Z",
+      "type": "pass",
+      "message": "✅ Forced colors mode considered"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.569Z",
+      "type": "pass",
+      "message": "✅ ARIA attributes present"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.569Z",
+      "type": "info",
+      "message": "=================================================="
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.569Z",
+      "type": "info",
+      "message": "Terminal Effects Validation Complete"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.569Z",
+      "type": "info",
+      "message": "✅ Passed: 28"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.569Z",
+      "type": "info",
+      "message": "❌ Failed: 0"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.570Z",
+      "type": "info",
+      "message": "⚠️ Warnings: 0"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.570Z",
+      "type": "info",
+      "message": "📊 Success Rate: 100.0%"
+    },
+    {
+      "timestamp": "2025-11-05T13:24:14.570Z",
+      "type": "success",
+      "message": "🎉 All terminal effects tests passed!"
+    }
+  ]
+}

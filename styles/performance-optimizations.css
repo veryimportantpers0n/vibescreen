@@ -1,0 +1,695 @@
+/* VibeScreen Performance Optimizations and Cross-Browser Compatibility */
+
+/* Performance Optimization Variables */
+:root {
+  /* Animation Performance Settings */
+  --performance-mode: auto; /* auto | optimized | minimal */
+  --animation-quality: high; /* high | medium | low */
+  --effect-intensity: 1; /* 0-1 scale */
+  
+  /* Frame Rate Targets */
+  --target-fps: 60;
+  --animation-budget: 16.67ms; /* 1000ms / 60fps */
+  
+  /* GPU Acceleration Hints */
+  --gpu-acceleration: translateZ(0);
+  --will-change-auto: auto;
+  --will-change-transform: transform;
+  --will-change-opacity: opacity;
+  --will-change-composite: transform, opacity;
+  
+  /* Browser Compatibility Fallbacks */
+  --backdrop-filter-fallback: blur(5px);
+  --backdrop-filter-webkit: -webkit-backdrop-filter;
+  --transform-3d-fallback: translate3d(0, 0, 0);
+  
+  /* Performance Thresholds */
+  --low-end-device-threshold: 2; /* cores */
+  --battery-save-threshold: 20; /* percentage */
+  --memory-threshold: 4; /* GB */
+}
+
+/* GPU Acceleration and Layer Promotion */
+.gpu-accelerated {
+  will-change: var(--will-change-composite);
+  transform: var(--gpu-acceleration);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* High-Performance Animation Classes */
+.animate-optimized {
+  will-change: var(--will-change-composite);
+  transform: var(--gpu-acceleration);
+  backface-visibility: hidden;
+  contain: layout style paint;
+}
+
+.animate-transform-only {
+  will-change: var(--will-change-transform);
+  transform: var(--gpu-acceleration);
+  /* Avoid animating layout-affecting properties */
+}
+
+.animate-opacity-only {
+  will-change: var(--will-change-opacity);
+  transform: var(--gpu-acceleration);
+  /* Optimize for opacity-only animations */
+}
+
+/* Performance-Optimized Terminal Effects */
+.terminal-effects-optimized {
+  /* Use transform instead of changing position */
+  will-change: transform, opacity;
+  transform: var(--gpu-acceleration);
+  backface-visibility: hidden;
+  
+  /* Contain rendering to prevent reflows */
+  contain: layout style paint;
+  
+  /* Optimize text rendering */
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+}
+
+/* Optimized Phosphor Glow Effects */
+.phosphor-glow-optimized {
+  /* Use box-shadow instead of text-shadow for better performance */
+  position: relative;
+  color: var(--matrix-green);
+}
+
+.phosphor-glow-optimized::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: radial-gradient(
+    ellipse at center,
+    var(--phosphor-glow) 0%,
+    transparent 70%
+  );
+  z-index: -1;
+  border-radius: inherit;
+  will-change: opacity;
+  animation: phosphor-glow-optimized 2s ease-in-out infinite alternate;
+}
+
+@keyframes phosphor-glow-optimized {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Optimized Scan Lines */
+.scan-lines-optimized {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-lines-optimized::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 255, 0, 0.02) 2px,
+    rgba(0, 255, 0, 0.02) 4px
+  );
+  pointer-events: none;
+  will-change: transform;
+  animation: scan-lines-move-optimized 2s linear infinite;
+}
+
+@keyframes scan-lines-move-optimized {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* Cross-Browser Compatibility Mixins */
+
+/* Backdrop Filter with Fallbacks */
+.backdrop-blur {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  
+  /* Fallback for browsers without backdrop-filter support */
+  background: rgba(0, 0, 0, 0.8);
+}
+
+@supports (backdrop-filter: blur(5px)) or (-webkit-backdrop-filter: blur(5px)) {
+  .backdrop-blur {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Transform 3D with Fallbacks */
+.transform-3d {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+}
+
+/* CSS Grid with Flexbox Fallback */
+.grid-layout {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+@supports (display: grid) {
+  .grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+  }
+}
+
+/* Custom Properties with Fallbacks */
+.color-fallback {
+  color: #00FF00; /* Fallback */
+  color: var(--matrix-green, #00FF00);
+}
+
+/* Vendor Prefixes for Animations */
+@-webkit-keyframes fade-in-optimized {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@-moz-keyframes fade-in-optimized {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-optimized {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-optimized {
+  animation: fade-in-optimized 0.3s ease-out forwards;
+  -webkit-animation: fade-in-optimized 0.3s ease-out forwards;
+  -moz-animation: fade-in-optimized 0.3s ease-out forwards;
+}
+
+/* Performance Monitoring and Adaptive Quality */
+
+/* Low-End Device Optimizations */
+@media (max-device-memory: 4GB) {
+  :root {
+    --performance-mode: optimized;
+    --animation-quality: medium;
+    --effect-intensity: 0.7;
+  }
+  
+  .phosphor-glow,
+  .phosphor-glow-bright,
+  .phosphor-glow-subtle {
+    animation-duration: 3s; /* Slower animations */
+    text-shadow: 0 0 5px var(--matrix-green); /* Simpler shadows */
+  }
+  
+  .scan-lines::before {
+    opacity: 0.5; /* Reduce scan line intensity */
+  }
+  
+  .crt-screen::before,
+  .crt-screen::after {
+    display: none; /* Disable CRT effects on low-end devices */
+  }
+}
+
+/* Battery Optimization */
+@media (prefers-reduced-motion: no-preference) {
+  .battery-optimized {
+    animation-play-state: running;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battery-optimized {
+    animation-play-state: paused;
+  }
+}
+
+/* High Refresh Rate Optimization */
+@media (min-refresh-rate: 120hz) {
+  :root {
+    --animation-fast: 0.08s;
+    --animation-normal: 0.16s;
+    --animation-slow: 0.32s;
+  }
+  
+  .high-refresh-optimized {
+    animation-duration: calc(var(--animation-normal) * 0.8);
+  }
+}
+
+/* CPU Core Detection and Optimization */
+@media (min-device-pixel-ratio: 1) and (min-resolution: 96dpi) {
+  .multi-core-optimized {
+    /* Enable more complex animations on capable devices */
+    will-change: transform, opacity, filter;
+  }
+}
+
+/* Memory-Based Optimizations */
+.memory-optimized {
+  /* Limit concurrent animations */
+  contain: strict;
+  
+  /* Optimize image and texture memory */
+  image-rendering: optimizeSpeed;
+  
+  /* Reduce composite layers */
+  will-change: auto;
+}
+
+/* Browser-Specific Optimizations */
+
+/* Chrome/Chromium Optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .chrome-optimized {
+    /* Use Chrome's optimized rendering path */
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+  }
+  
+  .chrome-text-rendering {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Firefox Optimizations */
+@-moz-document url-prefix() {
+  .firefox-optimized {
+    /* Firefox-specific optimizations */
+    -moz-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+  
+  .firefox-text-rendering {
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
+  }
+}
+
+/* Safari Optimizations */
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) {
+    .safari-optimized {
+      /* Safari-specific optimizations */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+    
+    .safari-text-rendering {
+      -webkit-font-smoothing: subpixel-antialiased;
+    }
+  }
+}
+
+/* Edge/IE Fallbacks */
+@supports (-ms-ime-align: auto) {
+  .edge-fallback {
+    /* Simplified effects for Edge */
+    animation: none;
+    transition: opacity 0.3s ease;
+  }
+}
+
+/* Performance Monitoring Classes */
+.performance-monitor-enabled {
+  /* Add performance monitoring hooks */
+  --performance-start: 0;
+  --performance-end: 0;
+}
+
+.performance-critical {
+  /* Mark critical performance elements */
+  will-change: transform, opacity;
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Adaptive Quality System */
+.quality-high {
+  /* Full quality effects */
+  --effect-intensity: 1;
+  --animation-quality: high;
+}
+
+.quality-medium {
+  /* Reduced quality for better performance */
+  --effect-intensity: 0.7;
+  --animation-quality: medium;
+  
+  .phosphor-glow {
+    text-shadow: 0 0 5px var(--matrix-green);
+  }
+  
+  .scan-lines::before {
+    opacity: 0.5;
+  }
+}
+
+.quality-low {
+  /* Minimal effects for maximum performance */
+  --effect-intensity: 0.3;
+  --animation-quality: low;
+  
+  .phosphor-glow,
+  .phosphor-glow-bright,
+  .phosphor-glow-subtle {
+    text-shadow: none;
+    animation: none;
+  }
+  
+  .scan-lines::before,
+  .scan-lines::after {
+    display: none;
+  }
+  
+  .crt-screen {
+    display: none;
+  }
+}
+
+/* Frame Rate Optimization */
+.fps-60 {
+  /* Target 60fps */
+  animation-duration: calc(1000ms / 60);
+}
+
+.fps-30 {
+  /* Target 30fps for battery saving */
+  animation-duration: calc(1000ms / 30);
+}
+
+.fps-120 {
+  /* Target 120fps for high refresh displays */
+  animation-duration: calc(1000ms / 120);
+}
+
+/* Intersection Observer Optimizations */
+.lazy-animate {
+  /* Only animate when in viewport */
+  animation-play-state: paused;
+}
+
+.lazy-animate.in-viewport {
+  animation-play-state: running;
+}
+
+/* Resource Loading Optimizations */
+.preload-critical {
+  /* Critical resources */
+  font-display: swap;
+  /* Note: loading and decoding are HTML attributes, not CSS properties */
+}
+
+.lazy-load {
+  /* Non-critical resources */
+  /* Note: loading="lazy" and decoding="async" should be set as HTML attributes */
+  /* Example: <img loading="lazy" decoding="async" src="..." /> */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.lazy-load.loaded {
+  opacity: 1;
+}
+
+/* Memory Leak Prevention */
+.cleanup-animations {
+  /* Ensure animations are cleaned up */
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+}
+
+.cleanup-animations.completed {
+  animation: none;
+  will-change: auto;
+}
+
+/* Touch Performance Optimizations */
+@media (pointer: coarse) {
+  .touch-optimized {
+    /* Optimize for touch interactions */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  .touch-feedback {
+    /* Provide immediate touch feedback */
+    transition: transform 0.1s ease;
+  }
+  
+  .touch-feedback:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Scroll Performance */
+.scroll-optimized {
+  /* Optimize scrolling performance */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+/* Paint Optimization */
+.paint-optimized {
+  /* Optimize paint operations */
+  contain: paint;
+  isolation: isolate;
+}
+
+/* Layout Optimization */
+.layout-optimized {
+  /* Prevent layout thrashing */
+  contain: layout;
+  will-change: transform;
+}
+
+/* Composite Layer Optimization */
+.composite-optimized {
+  /* Force composite layer creation */
+  will-change: transform;
+  transform: translateZ(0);
+  isolation: isolate;
+}
+
+/* Debug Performance Classes */
+.debug-performance {
+  /* Visual indicators for performance debugging */
+  outline: 2px solid red;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.debug-gpu-layer {
+  /* Highlight GPU layers */
+  outline: 2px solid blue;
+  background: rgba(0, 0, 255, 0.1);
+}
+
+.debug-reflow {
+  /* Highlight elements causing reflows */
+  outline: 2px solid orange;
+  background: rgba(255, 165, 0, 0.1);
+}
+
+/* Performance Utilities */
+.no-animation {
+  animation: none !important;
+  transition: none !important;
+}
+
+.force-gpu {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.prevent-reflow {
+  contain: layout style;
+}
+
+.optimize-text {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/* Responsive Performance Adjustments */
+@media (max-width: 768px) {
+  .mobile-performance {
+    /* Reduce effects on mobile */
+    --effect-intensity: 0.6;
+    --animation-quality: medium;
+  }
+  
+  .mobile-performance .phosphor-glow {
+    text-shadow: 0 0 3px var(--matrix-green);
+  }
+  
+  .mobile-performance .scan-lines::before {
+    opacity: 0.3;
+  }
+}
+
+@media (max-width: 480px) {
+  .small-mobile-performance {
+    /* Minimal effects on small screens */
+    --effect-intensity: 0.4;
+    --animation-quality: low;
+  }
+  
+  .small-mobile-performance .crt-screen {
+    display: none;
+  }
+  
+  .small-mobile-performance .matrix-rain {
+    display: none;
+  }
+}
+
+/* Print Performance */
+@media print {
+  .print-optimized {
+    /* Disable all animations and effects for printing */
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Accessibility Performance */
+@media (prefers-reduced-motion: reduce) {
+  .accessibility-performance {
+    /* Maintain performance while respecting accessibility */
+    animation-duration: 0.01s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01s !important;
+  }
+}
+
+/* Color Scheme Performance */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-performance {
+    /* Optimize for dark mode */
+    color-scheme: dark;
+  }
+}
+
+/* Contrast Performance */
+@media (prefers-contrast: high) {
+  .high-contrast-performance {
+    /* Simplify effects for high contrast */
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+}
+
+/* Network-Based Optimizations */
+@media (prefers-reduced-data: reduce) {
+  .data-saver-performance {
+    /* Reduce resource usage on slow connections */
+    animation: none;
+    background-image: none;
+    filter: none;
+  }
+}
+
+/* Feature Detection and Fallbacks */
+@supports (will-change: transform) {
+  .modern-browser-optimized {
+    will-change: transform, opacity;
+  }
+}
+
+@supports not (will-change: transform) {
+  .legacy-browser-fallback {
+    /* Fallback for older browsers */
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+@supports (contain: layout) {
+  .containment-optimized {
+    contain: layout style paint;
+  }
+}
+
+@supports not (contain: layout) {
+  .containment-fallback {
+    /* Alternative optimization for browsers without containment */
+    overflow: hidden;
+    position: relative;
+  }
+}
+
+/* Performance Monitoring Integration */
+.performance-tracked {
+  /* Elements to track for performance metrics */
+  --performance-id: attr(data-performance-id);
+  --performance-type: attr(data-performance-type);
+}
+
+/* Critical Path Optimization */
+.critical-path {
+  /* Above-the-fold critical elements */
+  contain: layout style;
+  will-change: auto;
+}
+
+.non-critical-path {
+  /* Below-the-fold elements */
+  contain: strict;
+  content-visibility: auto;
+}
+
+/* Resource Hints */
+.preload-fonts {
+  /* Font preloading optimization */
+  font-display: swap;
+}
+
+.preconnect-resources {
+  /* Connection preloading for external resources */
+  /* Applied via HTML link tags: <link rel="preconnect" href="..."> */
+  /* This class can be used to mark elements that benefit from preconnected resources */
+  position: relative;
+}
+
+/* Final Performance Validation */
+.performance-validated {
+  /* Mark elements as performance-validated */
+  --performance-status: validated;
+  --performance-score: attr(data-performance-score);
+}

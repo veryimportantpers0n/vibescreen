@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { CommandParser } from './CommandParser';
 import CommandExecutorComponent from './CommandExecutor';
+import { getAccessibilityManager, announce, announceStatus } from '../utils/accessibilityManager';
 import styles from '../styles/terminal-interface.module.css';
 
 const TerminalInterface = ({ 
@@ -35,32 +36,31 @@ const TerminalInterface = ({
   const liveRegionRef = useRef(null);
   const commandParser = useRef(new CommandParser());
 
-  // Detect accessibility preferences
+  // Initialize accessibility manager and detect preferences
   useEffect(() => {
-    const detectAccessibilityPrefs = () => {
-      const highContrast = window.matchMedia('(prefers-contrast: high)').matches ||
-                          window.matchMedia('(forced-colors: active)').matches;
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const screenReader = window.navigator.userAgent.includes('NVDA') ||
-                          window.navigator.userAgent.includes('JAWS') ||
-                          window.speechSynthesis?.speaking ||
-                          document.querySelector('[aria-live]') !== null;
+    const accessibilityManager = getAccessibilityManager();
+    const preferences = accessibilityManager.getPreferences();
+    
+    setAccessibilityPrefs({
+      highContrast: preferences.highContrast,
+      reducedMotion: preferences.reducedMotion,
+      screenReader: preferences.screenReader
+    });
 
+    // Listen for preference changes through the accessibility manager
+    const handlePreferenceChange = () => {
+      const updatedPrefs = accessibilityManager.getPreferences();
       setAccessibilityPrefs({
-        highContrast,
-        reducedMotion,
-        screenReader
+        highContrast: updatedPrefs.highContrast,
+        reducedMotion: updatedPrefs.reducedMotion,
+        screenReader: updatedPrefs.screenReader
       });
     };
 
-    detectAccessibilityPrefs();
-
-    // Listen for preference changes
+    // Set up preference listeners
     const contrastQuery = window.matchMedia('(prefers-contrast: high)');
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const forcedColorsQuery = window.matchMedia('(forced-colors: active)');
-
-    const handlePreferenceChange = () => detectAccessibilityPrefs();
 
     contrastQuery.addEventListener('change', handlePreferenceChange);
     motionQuery.addEventListener('change', handlePreferenceChange);
@@ -235,23 +235,31 @@ const TerminalInterface = ({
     }
   };
 
-  // Screen reader announcement function
-  const announceToScreenReader = (message) => {
+  // Enhanced screen reader announcement function using accessibility manager
+  const announceToScreenReader = (message, priority = 'polite') => {
     if (!message) return;
     
-    // Add to announcements queue
+    // Use accessibility manager for announcements
+    if (priority === 'assertive') {
+      announce(message, 'assertive');
+    } else {
+      announce(message, 'polite');
+    }
+    
+    // Add to local announcements queue for UI feedback
     setAnnouncements(prev => {
       const newAnnouncements = [...prev, {
         id: Date.now(),
         message,
-        timestamp: new Date()
+        timestamp: new Date(),
+        priority
       }];
       
       // Limit to last 3 announcements
       return newAnnouncements.slice(-3);
     });
     
-    // Update live region
+    // Update live region as fallback
     if (liveRegionRef.current) {
       liveRegionRef.current.textContent = message;
     }

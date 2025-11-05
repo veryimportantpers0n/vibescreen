@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsManager from '../utils/SettingsManager.js';
 
 /**
  * CommandParser - Comprehensive terminal command interpreter for VibeScreen
@@ -6,6 +7,9 @@ import React from 'react';
  */
 class CommandParser {
   constructor() {
+    // Initialize settings manager
+    this.settingsManager = new SettingsManager();
+    
     // Character name mapping for all available modes
     this.characterNameMap = {
       // Full names (primary)
@@ -117,6 +121,66 @@ class CommandParser {
         description: 'Show debug information and system status',
         usage: '!debug',
         handler: this.handleDebug.bind(this)
+      },
+      speed: {
+        pattern: /^!speed\s+([\d.]+)$/i,
+        description: 'Adjust animation speed multiplier (0.1-5.0)',
+        usage: '!speed <multiplier>',
+        handler: this.handleSpeed.bind(this)
+      },
+      frequency: {
+        pattern: /^!frequency\s+(\d+)$/i,
+        description: 'Set message frequency in seconds (5-300)',
+        usage: '!frequency <seconds>',
+        handler: this.handleFrequency.bind(this)
+      },
+      effects: {
+        pattern: /^!effects\s+(high|medium|low|off)$/i,
+        description: 'Adjust visual effects intensity',
+        usage: '!effects <high|medium|low|off>',
+        handler: this.handleEffects.bind(this)
+      },
+      performance: {
+        pattern: /^!performance$/i,
+        description: 'Show real-time performance metrics',
+        usage: '!performance',
+        handler: this.handlePerformance.bind(this)
+      },
+      export: {
+        pattern: /^!export$/i,
+        description: 'Export current settings configuration',
+        usage: '!export',
+        handler: this.handleExport.bind(this)
+      },
+      import: {
+        pattern: /^!import\s+(.+)$/i,
+        description: 'Import settings from configuration string',
+        usage: '!import <config-string>',
+        handler: this.handleImport.bind(this)
+      },
+      reset: {
+        pattern: /^!reset$/i,
+        description: 'Reset all settings to defaults',
+        usage: '!reset',
+        handler: this.handleReset.bind(this)
+      },
+      volume: {
+        pattern: /^!volume\s+([\d.]+|mute|unmute)$/i,
+        description: 'Control ambient audio volume (0.0-1.0) or mute/unmute',
+        usage: '!volume <0.0-1.0|mute|unmute>',
+        handler: this.handleVolume.bind(this)
+      },
+      mute: {
+        pattern: /^!mute$/i,
+        description: 'Mute ambient audio',
+        usage: '!mute',
+        handler: this.handleMute.bind(this)
+      },
+      unmute: {
+        pattern: /^!unmute$/i,
+        description: 'Unmute ambient audio',
+        usage: '!unmute',
+        handler: this.handleUnmute.bind(this)
       }
     };
   }
@@ -328,7 +392,17 @@ class CommandParser {
       clear: { minArgs: 0, maxArgs: 0 },
       config: { minArgs: 0, maxArgs: 0 },
       debug: { minArgs: 0, maxArgs: 0 },
-      switch: { minArgs: 1, maxArgs: 10, description: 'character name' }
+      switch: { minArgs: 1, maxArgs: 10, description: 'character name' },
+      speed: { minArgs: 1, maxArgs: 1, description: 'speed multiplier' },
+      frequency: { minArgs: 1, maxArgs: 1, description: 'frequency in seconds' },
+      effects: { minArgs: 1, maxArgs: 1, description: 'effects level' },
+      performance: { minArgs: 0, maxArgs: 0 },
+      export: { minArgs: 0, maxArgs: 0 },
+      import: { minArgs: 1, maxArgs: 1, description: 'configuration string' },
+      reset: { minArgs: 0, maxArgs: 0 },
+      volume: { minArgs: 1, maxArgs: 1, description: 'volume level or mute/unmute' },
+      mute: { minArgs: 0, maxArgs: 0 },
+      unmute: { minArgs: 0, maxArgs: 0 }
     };
 
     const requirements = parameterRequirements[command];
@@ -630,12 +704,25 @@ Message Control:
   !pause            - Pause automatic messages
   !resume           - Resume automatic messages  
   !test             - Show test message now
+  !frequency <sec>  - Set message timing (5-300 seconds)
+
+Customization:
+  !speed <mult>     - Animation speed (0.1-5.0, e.g., !speed 1.5)
+  !effects <level>  - Visual effects (high/medium/low/off)
+  !volume <level>   - Audio volume (0.0-1.0) or mute/unmute
+  !mute / !unmute   - Quick audio control
+
+Configuration:
+  !export           - Export settings for sharing
+  !import <config>  - Import settings configuration
+  !reset            - Reset all settings to defaults
 
 System:
   !help             - Show this help
   !clear            - Clear terminal history
   !config           - Show current settings
   !debug            - Show debug information
+  !performance      - Show performance metrics
 
 Type any command to get started!`;
 
@@ -816,12 +903,31 @@ Avg Switch Time: ${modeLoaderStats.performanceStats.avgCachedSwitchTime}ms`;
   }
 
   handleConfig(args, context) {
+    const settings = this.settingsManager.settings;
     const configText = `Current Configuration:
-Character: ${context.currentCharacter || 'Corporate AI'}
-Messages: ${context.messageStatus || 'Active'}
-Theme: Matrix Green
-Auto-hide: Enabled (2s delay)
-Animations: Enabled`;
+Character: ${context.currentCharacter || settings.system.currentCharacter || 'Corporate AI'}
+Messages: ${settings.messages.paused ? 'Paused' : 'Active'} (${settings.messages.frequency}s intervals)
+
+Visual Settings:
+Animation Speed: ${settings.visual.animationSpeed}x
+Effects Level: ${settings.visual.effectsIntensity}
+Scan Lines: ${settings.visual.scanLinesEnabled ? 'Enabled' : 'Disabled'}
+Phosphor Glow: ${settings.visual.phosphorGlowEnabled ? 'Enabled' : 'Disabled'}
+
+Audio Settings:
+Audio System: ${settings.audio.enabled ? 'Enabled' : 'Disabled'}
+Volume: ${Math.round(settings.audio.volume * 100)}%
+Muted: ${settings.audio.muted ? 'Yes' : 'No'}
+
+Accessibility:
+High Contrast: ${settings.accessibility.highContrast ? 'Enabled' : 'Disabled'}
+Reduced Motion: ${settings.accessibility.reducedMotion ? 'Enabled' : 'Disabled'}
+Larger Text: ${settings.accessibility.largerText ? 'Enabled' : 'Disabled'}
+
+Advanced:
+Performance Mode: ${settings.advanced.performanceMode}
+Auto-save: ${settings.advanced.autoSave ? 'Enabled' : 'Disabled'}
+Debug Mode: ${settings.advanced.debugMode ? 'Enabled' : 'Disabled'}`;
 
     return {
       success: true,
@@ -831,17 +937,288 @@ Animations: Enabled`;
   }
 
   handleDebug(args, context) {
+    const systemInfo = this.settingsManager.getSystemInfo();
     const debugText = `Debug Information:
 Terminal: Active
-Parser: CommandParser v1.0
+Parser: CommandParser v2.0 (Advanced Features)
 Commands: ${Object.keys(this.commandRegistry).length} registered
 Characters: ${Object.keys(this.characterDisplayNames).length} available
-Context: ${Object.keys(context).join(', ')}`;
+Context: ${Object.keys(context).join(', ')}
+
+System Info:
+Platform: ${systemInfo.platform}
+Viewport: ${systemInfo.viewport.width}x${systemInfo.viewport.height}
+Performance: ${systemInfo.performance.fps} FPS, ${systemInfo.performance.memoryUsage}MB
+Storage: ${systemInfo.storage.localStorage.itemCount} items, ${Math.round(systemInfo.storage.localStorage.estimatedSize/1024)}KB`;
 
     return {
       success: true,
       message: debugText,
       action: 'show-debug'
+    };
+  }
+
+  handleSpeed(args, context) {
+    const speed = parseFloat(args[0]);
+    
+    // Validate speed range
+    if (isNaN(speed) || speed < 0.1 || speed > 5.0) {
+      return {
+        success: false,
+        message: 'Invalid speed value. Must be between 0.1 and 5.0',
+        suggestion: 'Example: !speed 1.5 (for 1.5x speed) or !speed 0.5 (for half speed)'
+      };
+    }
+
+    // Update settings
+    this.settingsManager.setSetting('visual.animationSpeed', speed);
+    
+    // Notify context if callback available
+    if (context.onSettingChanged) {
+      context.onSettingChanged('visual.animationSpeed', speed);
+    }
+
+    return {
+      success: true,
+      message: `Animation speed set to ${speed}x`,
+      action: 'setting-changed',
+      data: { setting: 'animationSpeed', value: speed }
+    };
+  }
+
+  handleFrequency(args, context) {
+    const frequency = parseInt(args[0]);
+    
+    // Validate frequency range
+    if (isNaN(frequency) || frequency < 5 || frequency > 300) {
+      return {
+        success: false,
+        message: 'Invalid frequency value. Must be between 5 and 300 seconds',
+        suggestion: 'Example: !frequency 30 (for 30 second intervals) or !frequency 60 (for 1 minute)'
+      };
+    }
+
+    // Update settings
+    this.settingsManager.setSetting('messages.frequency', frequency);
+    
+    // Notify context if callback available
+    if (context.onSettingChanged) {
+      context.onSettingChanged('messages.frequency', frequency);
+    }
+
+    return {
+      success: true,
+      message: `Message frequency set to ${frequency} seconds`,
+      action: 'setting-changed',
+      data: { setting: 'frequency', value: frequency }
+    };
+  }
+
+  handleEffects(args, context) {
+    const level = args[0].toLowerCase();
+    const validLevels = ['high', 'medium', 'low', 'off'];
+    
+    if (!validLevels.includes(level)) {
+      return {
+        success: false,
+        message: 'Invalid effects level',
+        suggestion: 'Valid levels: high, medium, low, off'
+      };
+    }
+
+    // Update settings
+    this.settingsManager.setSetting('visual.effectsIntensity', level);
+    
+    // Notify context if callback available
+    if (context.onSettingChanged) {
+      context.onSettingChanged('visual.effectsIntensity', level);
+    }
+
+    const description = {
+      high: 'Maximum visual effects enabled',
+      medium: 'Balanced visual effects',
+      low: 'Minimal visual effects',
+      off: 'Visual effects disabled'
+    };
+
+    return {
+      success: true,
+      message: `Effects set to ${level}. ${description[level]}`,
+      action: 'setting-changed',
+      data: { setting: 'effectsIntensity', value: level }
+    };
+  }
+
+  handlePerformance(args, context) {
+    const metrics = this.settingsManager.getPerformanceMetrics();
+    const systemInfo = this.settingsManager.getSystemInfo();
+    
+    const performanceText = `Performance Metrics:
+FPS: ${metrics.fps} (Target: 60)
+Frame Time: ${metrics.frameTime.toFixed(2)}ms
+Memory Usage: ${metrics.memoryUsage}MB
+Active Components: ${systemInfo.settings.sections}
+Last Update: ${new Date(metrics.lastUpdate).toLocaleTimeString()}
+
+System Performance:
+Viewport: ${systemInfo.viewport.width}x${systemInfo.viewport.height}
+Color Depth: ${systemInfo.screen.colorDepth}-bit
+Storage Used: ${Math.round(systemInfo.storage.localStorage.estimatedSize/1024)}KB
+Settings Size: ${Math.round(systemInfo.settings.totalSize/1024)}KB
+
+Performance Mode: ${this.settingsManager.getSetting('advanced.performanceMode')}
+Effects Level: ${this.settingsManager.getSetting('visual.effectsIntensity')}
+Animation Speed: ${this.settingsManager.getSetting('visual.animationSpeed')}x`;
+
+    return {
+      success: true,
+      message: performanceText,
+      action: 'show-performance'
+    };
+  }
+
+  handleExport(args, context) {
+    const result = this.settingsManager.exportConfig();
+    
+    if (result.success) {
+      // Also provide size information
+      const sizeKB = Math.round(result.size / 1024 * 100) / 100;
+      const enhancedMessage = `${result.message}\n\nConfiguration size: ${result.size} characters (${sizeKB}KB)`;
+      
+      return {
+        success: true,
+        message: enhancedMessage,
+        action: 'export-config',
+        data: { configString: result.configString, size: result.size }
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message,
+        suggestion: 'Please try again or check console for errors'
+      };
+    }
+  }
+
+  handleImport(args, context) {
+    const configString = args[0];
+    const result = this.settingsManager.importConfig(configString);
+    
+    if (result.success) {
+      // Notify context of settings change
+      if (context.onSettingsImported) {
+        context.onSettingsImported(this.settingsManager.settings);
+      }
+      
+      return {
+        success: true,
+        message: result.message,
+        action: 'import-config',
+        data: { settings: this.settingsManager.settings }
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message,
+        suggestion: 'Make sure you copied the complete configuration string from !export'
+      };
+    }
+  }
+
+  handleReset(args, context) {
+    const result = this.settingsManager.resetToDefaults();
+    
+    if (result.success) {
+      // Notify context of settings reset
+      if (context.onSettingsReset) {
+        context.onSettingsReset(this.settingsManager.settings);
+      }
+      
+      return {
+        success: true,
+        message: result.message,
+        action: 'reset-settings',
+        data: { settings: this.settingsManager.settings }
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message,
+        suggestion: 'Please try again or check console for errors'
+      };
+    }
+  }
+
+  handleVolume(args, context) {
+    const input = args[0].toLowerCase();
+    
+    if (input === 'mute') {
+      return this.handleMute([], context);
+    } else if (input === 'unmute') {
+      return this.handleUnmute([], context);
+    }
+    
+    const volume = parseFloat(input);
+    
+    // Validate volume range
+    if (isNaN(volume) || volume < 0 || volume > 1) {
+      return {
+        success: false,
+        message: 'Invalid volume value. Must be between 0.0 and 1.0',
+        suggestion: 'Example: !volume 0.5 (for 50% volume) or !volume mute/unmute'
+      };
+    }
+
+    // Update settings
+    this.settingsManager.setSetting('audio.volume', volume);
+    this.settingsManager.setSetting('audio.muted', false);
+    
+    // Notify context if callback available
+    if (context.onAudioSettingChanged) {
+      context.onAudioSettingChanged('volume', volume);
+    }
+
+    const percentage = Math.round(volume * 100);
+    return {
+      success: true,
+      message: `Audio volume set to ${percentage}%`,
+      action: 'audio-setting-changed',
+      data: { setting: 'volume', value: volume }
+    };
+  }
+
+  handleMute(args, context) {
+    this.settingsManager.setSetting('audio.muted', true);
+    
+    // Notify context if callback available
+    if (context.onAudioSettingChanged) {
+      context.onAudioSettingChanged('muted', true);
+    }
+
+    return {
+      success: true,
+      message: 'Audio muted',
+      action: 'audio-setting-changed',
+      data: { setting: 'muted', value: true }
+    };
+  }
+
+  handleUnmute(args, context) {
+    this.settingsManager.setSetting('audio.muted', false);
+    
+    // Notify context if callback available
+    if (context.onAudioSettingChanged) {
+      context.onAudioSettingChanged('muted', false);
+    }
+
+    const volume = this.settingsManager.getSetting('audio.volume');
+    const percentage = Math.round(volume * 100);
+
+    return {
+      success: true,
+      message: `Audio unmuted (volume: ${percentage}%)`,
+      action: 'audio-setting-changed',
+      data: { setting: 'muted', value: false }
     };
   }
 }
@@ -863,7 +1240,10 @@ const CommandParserComponent = ({ onCommandExecute, context }) => {
     executeCommand,
     validateCommand: parser.validateCommand.bind(parser),
     findCharacter: parser.findCharacter.bind(parser),
-    getAvailableCommands: () => Object.keys(parser.commandRegistry)
+    getAvailableCommands: () => Object.keys(parser.commandRegistry),
+    getSettingsManager: () => parser.settingsManager,
+    getSetting: (path) => parser.settingsManager.getSetting(path),
+    setSetting: (path, value) => parser.settingsManager.setSetting(path, value)
   }));
 
   return null; // This is a logic-only component

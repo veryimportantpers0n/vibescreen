@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import TerminalEffects from '../components/TerminalEffects';
+import { ThemeProvider } from '../utils/useThemeManager.js';
+import { initializeAccessibility } from '../utils/accessibilityManager';
 import '../styles/globals.css';
 import '../styles/modeThemes.css';
 import '../styles/animations.css';
@@ -72,32 +75,51 @@ function AppProvider({ children }) {
   const [currentMode, setCurrentMode] = useState('corporate-ai');
   const [messagesPaused, setMessagesPaused] = useState(false);
   const [globalConfig, setGlobalConfig] = useState(null);
+  const [themeTransitioning, setThemeTransitioning] = useState(false);
 
-  // Load global configuration on mount
+  // Load global configuration and initialize accessibility on mount
   useEffect(() => {
     const loadGlobalConfig = async () => {
       try {
-        // Default configuration - will be replaced when data foundation is implemented
+        // Initialize accessibility manager first
+        const accessibilityManager = initializeAccessibility();
+        const accessibilityPrefs = accessibilityManager.getPreferences();
+        
+        // Default configuration with accessibility preferences
         const defaultConfig = {
           messageFrequency: {
             min: 15000, // 15 seconds
             max: 45000  // 45 seconds
           },
-          animationSpeed: 1.0,
+          animationSpeed: accessibilityPrefs.reducedMotion ? 0.1 : 1.0,
           theme: 'matrix-green',
           accessibility: {
-            reducedMotion: false,
-            highContrast: false
+            reducedMotion: accessibilityPrefs.reducedMotion,
+            highContrast: accessibilityPrefs.highContrast,
+            screenReader: accessibilityPrefs.screenReader,
+            keyboardOnly: accessibilityPrefs.keyboardOnly
           }
         };
         setGlobalConfig(defaultConfig);
+        
+        // Announce app initialization for screen readers
+        setTimeout(() => {
+          accessibilityManager.announce('VibeScreen application loaded. Press F1 for keyboard shortcuts.');
+        }, 1000);
+        
       } catch (error) {
         console.error('Failed to load global configuration:', error);
         // Use fallback configuration
         setGlobalConfig({
           messageFrequency: { min: 30000, max: 60000 },
           animationSpeed: 1.0,
-          theme: 'matrix-green'
+          theme: 'matrix-green',
+          accessibility: {
+            reducedMotion: false,
+            highContrast: false,
+            screenReader: false,
+            keyboardOnly: false
+          }
         });
       }
     };
@@ -111,7 +133,9 @@ function AppProvider({ children }) {
     messagesPaused,
     setMessagesPaused,
     globalConfig,
-    setGlobalConfig
+    setGlobalConfig,
+    themeTransitioning,
+    setThemeTransitioning
   };
 
   return (
@@ -145,6 +169,10 @@ export default function App({ Component, pageProps }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         
+        {/* Accessibility Meta Tags */}
+        <meta name="color-scheme" content="dark" />
+        <meta name="supported-color-schemes" content="dark" />
+        
         {/* Preload critical fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
@@ -152,14 +180,61 @@ export default function App({ Component, pageProps }) {
           href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" 
           rel="stylesheet" 
         />
+        
+        {/* Accessibility Styles */}
+        <style jsx>{`
+          @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+            }
+          }
+          
+          @media (prefers-contrast: high) {
+            :root {
+              --matrix-green: #00FF00 !important;
+              --matrix-green-dim: #00CC00 !important;
+              --terminal-black: #000000 !important;
+            }
+          }
+        `}</style>
       </Head>
       
       <ErrorBoundary>
-        <AppProvider>
-          <div id="vibescreen-app">
-            <Component {...pageProps} />
-          </div>
-        </AppProvider>
+        <ThemeProvider
+          initialTheme="corporate-ai"
+          onThemeChange={(themeId, config) => {
+            console.log(`🎨 Global theme changed to: ${config.name}`);
+          }}
+          onTransitionStart={() => {
+            document.body.classList.add('global-theme-transitioning');
+          }}
+          onTransitionEnd={() => {
+            document.body.classList.remove('global-theme-transitioning');
+          }}
+        >
+          <AppProvider>
+            <div id="vibescreen-app" role="application" aria-label="VibeScreen - Ambient AI Companion">
+              {/* Skip to Content Link */}
+              <a href="#main-content" className="skip-to-content">
+                Skip to main content
+              </a>
+              
+              {/* Global Terminal Effects */}
+              <TerminalEffects enabled={true} intensity="normal" />
+              
+              {/* Main Application Content */}
+              <main id="main-content" role="main" aria-label="Main application interface">
+                <Component {...pageProps} />
+              </main>
+              
+              {/* Screen Reader Live Regions */}
+              <div aria-live="polite" aria-atomic="true" className="sr-only" id="sr-status-region"></div>
+              <div aria-live="assertive" aria-atomic="true" className="sr-only" id="sr-alert-region"></div>
+            </div>
+          </AppProvider>
+        </ThemeProvider>
       </ErrorBoundary>
     </>
   );

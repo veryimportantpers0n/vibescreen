@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Theming Integration Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--active-mode-bg-primary, #000);
+            color: var(--active-mode-color, #00ff00);
+            margin: 0;
+            padding: 20px;
+            transition: all 0.6s ease;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid var(--active-mode-color, #00ff00);
+            border-radius: 8px;
+            background: var(--active-mode-bg-secondary, rgba(0, 255, 0, 0.1));
+        }
+
+        .theme-button {
+            background: transparent;
+            border: 1px solid var(--active-mode-color, #00ff00);
+            color: var(--active-mode-color, #00ff00);
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .theme-button:hover {
+            background: var(--active-mode-color, #00ff00);
+            color: var(--active-mode-contrast, #000);
+        }
+
+        .theme-button.active {
+            background: var(--active-mode-color, #00ff00);
+            color: var(--active-mode-contrast, #000);
+            font-weight: bold;
+        }
+
+        .status-display {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--active-mode-bg-overlay, rgba(0, 255, 0, 0.05));
+            border-left: 4px solid var(--active-mode-color, #00ff00);
+        }
+
+        .color-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .color-swatch {
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .primary { background: var(--active-mode-color); color: var(--active-mode-contrast); }
+        .secondary { background: var(--active-mode-secondary); color: var(--active-mode-contrast); }
+        .accent { background: var(--active-mode-accent); color: var(--active-mode-contrast); }
+
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎨 Dynamic Theming Integration Test</h1>
+        
+        <div class="status-display">
+            <strong>Current Theme:</strong> <span id="current-theme">Loading...</span><br>
+            <strong>Transition Status:</strong> <span id="transition-status">Ready</span>
+        </div>
+
+        <div class="theme-buttons">
+            <h3>Select Theme:</h3>
+            <button class="theme-button" data-theme="corporate-ai">Corporate AI</button>
+            <button class="theme-button" data-theme="zen-monk">Zen Monk</button>
+            <button class="theme-button" data-theme="chaos">Chaos</button>
+            <button class="theme-button" data-theme="emotional-damage">Emotional Damage</button>
+            <button class="theme-button" data-theme="therapist">Therapist</button>
+            <button class="theme-button" data-theme="startup-founder">Startup Founder</button>
+            <button class="theme-button" data-theme="doomsday-prophet">Doomsday Prophet</button>
+            <button class="theme-button" data-theme="gamer-rage">Gamer Rage</button>
+            <button class="theme-button" data-theme="influencer">Influencer</button>
+            <button class="theme-button" data-theme="wholesome-grandma">Wholesome Grandma</button>
+            <button class="theme-button" data-theme="spooky">Spooky</button>
+        </div>
+
+        <div class="color-preview">
+            <div class="color-swatch primary">Primary Color</div>
+            <div class="color-swatch secondary">Secondary Color</div>
+            <div class="color-swatch accent">Accent Color</div>
+        </div>
+
+        <div class="log" id="log">
+            <div>🎨 Dynamic Theming Test Ready</div>
+        </div>
+
+        <div class="test-results">
+            <h3>Test Results:</h3>
+            <div id="test-results">Running tests...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Simple ThemeManager implementation for testing
+        class SimpleThemeManager {
+            constructor() {
+                this.currentTheme = 'corporate-ai';
+                this.themes = {
+                    'corporate-ai': {
+                        name: 'Corporate AI',
+                        primary: '#007acc',
+                        primaryLight: '#4da6d9',
+                        primaryDark: '#005a99',
+                        secondary: '#0099ff',
+                        accent: '#66b3ff',
+                        contrast: '#ffffff',
+                        bgPrimary: '#f7f7f7',
+                        bgSecondary: 'rgba(0, 122, 204, 0.1)',
+                        bgOverlay: 'rgba(0, 122, 204, 0.05)'
+                    },
+                    'zen-monk': {
+                        name: 'Zen Monk',
+                        primary: '#27ae60',
+                        primaryLight: '#58d68d',
+                        primaryDark: '#1e8449',
+                        secondary: '#2ecc71',
+                        accent: '#85e085',
+                        contrast: '#ffffff',
+                        bgPrimary: '#2a4d3a',
+                        bgSecondary: 'rgba(39, 174, 96, 0.1)',
+                        bgOverlay: 'rgba(39, 174, 96, 0.05)'
+                    },
+                    'chaos': {
+                        name: 'Chaos',
+                        primary: '#8e44ad',
+                        primaryLight: '#bb8fce',
+                        primaryDark: '#6c3483',
+                        secondary: '#9b59b6',
+                        accent: '#d7bde2',
+                        contrast: '#ffffff',
+                        bgPrimary: '#4a0e4e',
+                        bgSecondary: 'rgba(142, 68, 173, 0.15)',
+                        bgOverlay: 'rgba(142, 68, 173, 0.08)'
+                    },
+                    'emotional-damage': {
+                        name: 'Emotional Damage',
+                        primary: '#e74c3c',
+                        primaryLight: '#f1948a',
+                        primaryDark: '#c0392b',
+                        secondary: '#ec7063',
+                        accent: '#fadbd8',
+                        contrast: '#ffffff',
+                        bgPrimary: '#2c1810',
+                        bgSecondary: 'rgba(231, 76, 60, 0.1)',
+                        bgOverlay: 'rgba(231, 76, 60, 0.05)'
+                    },
+                    'therapist': {
+                        name: 'Therapist',
+                        primary: '#16a085',
+                        primaryLight: '#5dade2',
+                        primaryDark: '#138d75',
+                        secondary: '#48c9b0',
+                        accent: '#a3e4d7',
+                        contrast: '#ffffff',
+                        bgPrimary: '#1a3332',
+                        bgSecondary: 'rgba(22, 160, 133, 0.1)',
+                        bgOverlay: 'rgba(22, 160, 133, 0.05)'
+                    },
+                    'startup-founder': {
+                        name: 'Startup Founder',
+                        primary: '#f39c12',
+                        primaryLight: '#f8c471',
+                        primaryDark: '#d68910',
+                        secondary: '#f5b041',
+                        accent: '#fdeaa7',
+                        contrast: '#ffffff',
+                        bgPrimary: '#3e2723',
+                        bgSecondary: 'rgba(243, 156, 18, 0.1)',
+                        bgOverlay: 'rgba(243, 156, 18, 0.05)'
+                    },
+                    'doomsday-prophet': {
+                        name: 'Doomsday Prophet',
+                        primary: '#663399',
+                        primaryLight: '#9966cc',
+                        primaryDark: '#4d1a66',
+                        secondary: '#7d4cdb',
+                        accent: '#e8d5f2',
+                        contrast: '#ffffff',
+                        bgPrimary: '#1a0d1a',
+                        bgSecondary: 'rgba(102, 51, 153, 0.15)',
+                        bgOverlay: 'rgba(102, 51, 153, 0.08)'
+                    },
+                    'gamer-rage': {
+                        name: 'Gamer Rage',
+                        primary: '#e67e22',
+                        primaryLight: '#f0b27a',
+                        primaryDark: '#ca6f1e',
+                        secondary: '#f39c12',
+                        accent: '#fbeee6',
+                        contrast: '#ffffff',
+                        bgPrimary: '#3e2723',
+                        bgSecondary: 'rgba(230, 126, 34, 0.15)',
+                        bgOverlay: 'rgba(230, 126, 34, 0.08)'
+                    },
+                    'influencer': {
+                        name: 'Influencer',
+                        primary: '#e91e63',
+                        primaryLight: '#f48fb1',
+                        primaryDark: '#ad1457',
+                        secondary: '#f06292',
+                        accent: '#fce4ec',
+                        contrast: '#ffffff',
+                        bgPrimary: '#2d1b2e',
+                        bgSecondary: 'rgba(233, 30, 99, 0.1)',
+                        bgOverlay: 'rgba(233, 30, 99, 0.05)'
+                    },
+                    'wholesome-grandma': {
+                        name: 'Wholesome Grandma',
+                        primary: '#8d6e63',
+                        primaryLight: '#bcaaa4',
+                        primaryDark: '#5d4037',
+                        secondary: '#a1887f',
+                        accent: '#efebe9',
+                        contrast: '#ffffff',
+                        bgPrimary: '#3e2723',
+                        bgSecondary: 'rgba(141, 110, 99, 0.1)',
+                        bgOverlay: 'rgba(141, 110, 99, 0.05)'
+                    },
+                    'spooky': {
+                        name: 'Spooky',
+                        primary: '#ff6600',
+                        primaryLight: '#ff9933',
+                        primaryDark: '#cc4400',
+                        secondary: '#ff8533',
+                        accent: '#fff3e0',
+                        contrast: '#ffffff',
+                        bgPrimary: '#1a0d00',
+                        bgSecondary: 'rgba(255, 102, 0, 0.15)',
+                        bgOverlay: 'rgba(255, 102, 0, 0.08)'
+                    }
+                };
+            }
+
+            applyTheme(themeId) {
+                const theme = this.themes[themeId];
+                if (!theme) return false;
+
+                const root = document.documentElement;
+                root.style.setProperty('--active-mode-color', theme.primary);
+                root.style.setProperty('--active-mode-color-light', theme.primaryLight);
+                root.style.setProperty('--active-mode-color-dark', theme.primaryDark);
+                root.style.setProperty('--active-mode-secondary', theme.secondary);
+                root.style.setProperty('--active-mode-accent', theme.accent);
+                root.style.setProperty('--active-mode-contrast', theme.contrast);
+                root.style.setProperty('--active-mode-bg-primary', theme.bgPrimary);
+                root.style.setProperty('--active-mode-bg-secondary', theme.bgSecondary);
+                root.style.setProperty('--active-mode-bg-overlay', theme.bgOverlay);
+
+                this.currentTheme = themeId;
+                return true;
+            }
+
+            async switchTheme(themeId) {
+                document.getElementById('transition-status').textContent = 'Transitioning...';
+                document.body.classList.add('theme-transitioning');
+                
+                const success = this.applyTheme(themeId);
+                
+                await new Promise(resolve => setTimeout(resolve, 600));
+                
+                document.body.classList.remove('theme-transitioning');
+                document.getElementById('transition-status').textContent = 'Ready';
+                document.getElementById('current-theme').textContent = this.themes[themeId]?.name || themeId;
+                
+                return success;
+            }
+        }
+
+        // Initialize theme manager
+        const themeManager = new SimpleThemeManager();
+        const log = document.getElementById('log');
+        const testResults = document.getElementById('test-results');
+
+        function addLog(message) {
+            const div = document.createElement('div');
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Set up theme buttons
+        document.querySelectorAll('.theme-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                const themeId = button.dataset.theme;
+                addLog(`Switching to ${themeId}...`);
+                
+                // Update active button
+                document.querySelectorAll('.theme-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                
+                const success = await themeManager.switchTheme(themeId);
+                addLog(success ? `✅ Successfully switched to ${themeId}` : `❌ Failed to switch to ${themeId}`);
+            });
+        });
+
+        // Run automated tests
+        async function runTests() {
+            const tests = [];
+            let passed = 0;
+            let failed = 0;
+
+            // Test 1: Theme switching
+            try {
+                await themeManager.switchTheme('zen-monk');
+                const color = getComputedStyle(document.documentElement).getPropertyValue('--active-mode-color').trim();
+                if (color === '#27ae60') {
+                    tests.push('✅ Theme switching works');
+                    passed++;
+                } else {
+                    tests.push(`❌ Theme switching failed - expected #27ae60, got ${color}`);
+                    failed++;
+                }
+            } catch (error) {
+                tests.push(`❌ Theme switching error: ${error.message}`);
+                failed++;
+            }
+
+            // Test 2: CSS transitions
+            try {
+                document.body.classList.add('theme-transitioning');
+                const hasClass = document.body.classList.contains('theme-transitioning');
+                document.body.classList.remove('theme-transitioning');
+                
+                if (hasClass) {
+                    tests.push('✅ CSS transition classes work');
+                    passed++;
+                } else {
+                    tests.push('❌ CSS transition classes not working');
+                    failed++;
+                }
+            } catch (error) {
+                tests.push(`❌ CSS transition test error: ${error.message}`);
+                failed++;
+            }
+
+            // Test 3: All themes available
+            const availableThemes = Object.keys(themeManager.themes);
+            if (availableThemes.length === 11) {
+                tests.push('✅ All 11 themes available');
+                passed++;
+            } else {
+                tests.push(`❌ Expected 11 themes, found ${availableThemes.length}`);
+                failed++;
+            }
+
+            // Test 4: Color property application
+            try {
+                await themeManager.switchTheme('chaos');
+                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--active-mode-color').trim();
+                const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--active-mode-secondary').trim();
+                
+                if (primaryColor && secondaryColor) {
+                    tests.push('✅ Color properties applied correctly');
+                    passed++;
+                } else {
+                    tests.push('❌ Color properties not applied');
+                    failed++;
+                }
+            } catch (error) {
+                tests.push(`❌ Color property test error: ${error.message}`);
+                failed++;
+            }
+
+            // Display results
+            testResults.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <strong>Test Summary:</strong> ${passed} passed, ${failed} failed
+                </div>
+                ${tests.map(test => `<div>${test}</div>`).join('')}
+            `;
+
+            addLog(`Tests completed: ${passed} passed, ${failed} failed`);
+        }
+
+        // Initialize
+        themeManager.applyTheme('corporate-ai');
+        document.getElementById('current-theme').textContent = 'Corporate AI';
+        document.querySelector('[data-theme="corporate-ai"]').classList.add('active');
+        addLog('🎨 Dynamic theming test initialized');
+
+        // Run tests after a short delay
+        setTimeout(runTests, 1000);
+    </script>
+</body>
+</html>

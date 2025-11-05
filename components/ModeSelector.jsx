@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { runThemeTests } from '../utils/modeThemeValidator.js';
 import { runComprehensiveThemeTests } from '../utils/modeThemeTest.js';
+import { useThemeManager } from '../utils/useThemeManager.js';
+import { getAccessibilityManager, announce, announceStatus } from '../utils/accessibilityManager';
 
 /**
  * ModeSelectorWithAPI Component
@@ -18,6 +20,17 @@ const ModeSelectorWithAPI = ({
   const [activeMode, setActiveMode] = useState(initialActiveMode);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Initialize theme manager
+  const themeManager = useThemeManager({
+    initialTheme: initialActiveMode || 'corporate-ai',
+    onThemeChange: (themeId, config) => {
+      console.log(`🎨 Theme changed to: ${config.name}`);
+    },
+    onTransitionStart: (fromTheme, toTheme) => {
+      console.log(`🎨 Theme transition: ${fromTheme} → ${toTheme}`);
+    }
+  });
 
   // Load modes from API on component mount
   useEffect(() => {
@@ -87,8 +100,11 @@ const ModeSelectorWithAPI = ({
   }, []); // Empty dependency array - only run on mount
 
   // Handle mode selection from the UI
-  const handleModeSelect = (mode) => {
+  const handleModeSelect = async (mode) => {
     if (mode && mode.id !== activeMode) {
+      // Switch theme first
+      await themeManager.switchTheme(mode.id);
+      
       setActiveMode(mode.id);
       if (onModeChange) {
         onModeChange(mode);
@@ -104,6 +120,7 @@ const ModeSelectorWithAPI = ({
       loading={loading}
       error={error}
       className={className}
+      themeManager={themeManager}
     />
   );
 };
@@ -120,7 +137,8 @@ const ModeSelector = ({
   onModeChange, 
   loading = false, 
   error = null,
-  className = '' 
+  className = '',
+  themeManager = null
 }) => {
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
@@ -220,19 +238,16 @@ const ModeSelector = ({
     }
   };
 
-  // Screen reader announcement helper
-  const announceToScreenReader = (message) => {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'assertive');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    document.body.appendChild(announcement);
+  // Enhanced screen reader announcement helper using accessibility manager
+  const announceToScreenReader = (message, priority = 'assertive') => {
+    if (!message) return;
     
-    // Remove after announcement
-    setTimeout(() => {
-      document.body.removeChild(announcement);
-    }, 1000);
+    // Use accessibility manager for consistent announcements
+    if (priority === 'assertive') {
+      announce(message, 'assertive');
+    } else {
+      announceStatus(message);
+    }
   };
 
   // Visual consistency testing utility
@@ -292,7 +307,7 @@ const ModeSelector = ({
   }, [modes]);
 
   // Handle mode selection with enhanced feedback and animations
-  const handleModeSelect = (mode) => {
+  const handleModeSelect = async (mode) => {
     if (onModeChange && mode && mode.id !== activeMode) {
       // Add switching animation class to current active button
       const currentActiveButton = buttonRefs.current.find((btn, index) => 
@@ -320,6 +335,11 @@ const ModeSelector = ({
         setTimeout(() => {
           containerRef.current.classList.remove('mode-transitioning');
         }, 600);
+      }
+      
+      // Apply theme if themeManager is available
+      if (themeManager) {
+        await themeManager.switchTheme(mode.id);
       }
       
       onModeChange(mode);
@@ -364,24 +384,33 @@ const ModeSelector = ({
         // Apply mode-specific theming to the container
         containerRef.current.setAttribute('data-active-mode', activeMode);
         
-        // Set CSS custom properties for dynamic theming
-        if (activeModeData.sceneProps) {
-          // Primary color from sceneProps
-          if (activeModeData.sceneProps.primaryColor) {
-            containerRef.current.style.setProperty('--active-mode-color', activeModeData.sceneProps.primaryColor);
+        // Use ThemeManager if available, otherwise fallback to legacy theming
+        if (themeManager) {
+          // ThemeManager handles all CSS custom properties
+          const themeConfig = themeManager.getThemeConfig(activeMode);
+          if (themeConfig) {
+            console.log(`🎨 Applied theme config for ${activeMode}:`, themeConfig.name);
           }
-          
-          // Background color from sceneProps
-          if (activeModeData.sceneProps.bgColor) {
-            containerRef.current.style.setProperty('--active-mode-bg-primary', activeModeData.sceneProps.bgColor);
-          }
-          
-          // Additional scene properties for theming
-          Object.keys(activeModeData.sceneProps).forEach(key => {
-            if (typeof activeModeData.sceneProps[key] === 'string' && activeModeData.sceneProps[key].startsWith('#')) {
-              containerRef.current.style.setProperty(`--active-mode-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, activeModeData.sceneProps[key]);
+        } else {
+          // Legacy theming fallback
+          if (activeModeData.sceneProps) {
+            // Primary color from sceneProps
+            if (activeModeData.sceneProps.primaryColor) {
+              containerRef.current.style.setProperty('--active-mode-color', activeModeData.sceneProps.primaryColor);
             }
-          });
+            
+            // Background color from sceneProps
+            if (activeModeData.sceneProps.bgColor) {
+              containerRef.current.style.setProperty('--active-mode-bg-primary', activeModeData.sceneProps.bgColor);
+            }
+            
+            // Additional scene properties for theming
+            Object.keys(activeModeData.sceneProps).forEach(key => {
+              if (typeof activeModeData.sceneProps[key] === 'string' && activeModeData.sceneProps[key].startsWith('#')) {
+                containerRef.current.style.setProperty(`--active-mode-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, activeModeData.sceneProps[key]);
+              }
+            });
+          }
         }
         
         // Apply mode-specific class for enhanced theming
@@ -395,7 +424,7 @@ const ModeSelector = ({
         });
       }
     }
-  }, [activeMode, modes]);
+  }, [activeMode, modes, themeManager]);
 
   // Handle container focus to enable keyboard navigation
   const handleContainerFocus = () => {
@@ -628,7 +657,8 @@ ModeSelector.propTypes = {
   onModeChange: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   error: PropTypes.string,
-  className: PropTypes.string
+  className: PropTypes.string,
+  themeManager: PropTypes.object
 };
 
 ModeButton.propTypes = {

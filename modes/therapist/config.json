@@ -1,0 +1,19 @@
+{
+  "id": "therapist",
+  "name": "Therapist",
+  "popupStyle": "speechBubble",
+  "popupPosition": "right",
+  "minDelaySeconds": 25,
+  "maxDelaySeconds": 50,
+  "messageProbabilities": {
+    "supportive": 0.7,
+    "cliche": 0.2,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#2d2416",
+    "ambientSpeed": 0.3,
+    "primaryColor": "#ff9966",
+    "warmth": 0.8
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "startup-founder",
+  "name": "Startup Founder",
+  "popupStyle": "overlay",
+  "minDelaySeconds": 8,
+  "maxDelaySeconds": 25,
+  "messageProbabilities": {
+    "exaggeration": 0.6,
+    "cliche": 0.3,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#000033",
+    "ambientSpeed": 1.5,
+    "primaryColor": "#00ffff",
+    "neonIntensity": 0.9
+  }
+}
