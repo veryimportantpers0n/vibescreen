@@ -20,7 +20,7 @@ const TerminalInterface = ({
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [displayHistory, setDisplayHistory] = useState([]);
-  const [executorMethods, setExecutorMethods] = useState(null);
+
   const [lastResponse, setLastResponse] = useState('');
   const [accessibilityPrefs, setAccessibilityPrefs] = useState({
     highContrast: false,
@@ -33,6 +33,7 @@ const TerminalInterface = ({
   const triggerRef = useRef(null);
   const inputRef = useRef(null);
   const historyRef = useRef(null);
+  const executorMethodsRef = useRef(null);
   const liveRegionRef = useRef(null);
   const commandParser = useRef(new CommandParser());
 
@@ -303,8 +304,8 @@ const TerminalInterface = ({
       }
 
       // Execute through CommandExecutor if available
-      if (executorMethods && executorMethods.execute) {
-        const executionResult = await executorMethods.execute(parseResult, context);
+      if (executorMethodsRef.current && executorMethodsRef.current.execute) {
+        const executionResult = await executorMethodsRef.current.execute(parseResult, context);
         
         // Handle execution result with accessibility announcements
         if (executionResult.success) {
@@ -496,8 +497,9 @@ const TerminalInterface = ({
     >
       {(methods) => {
         // Store executor methods for use in executeCommand
-        if (methods && !executorMethods) {
-          setExecutorMethods(methods);
+        if (methods) {
+          // Use a ref to avoid state updates during render
+          executorMethodsRef.current = methods;
         }
 
         return (

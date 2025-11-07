@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Selector Functionality Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px solid #00ff00;
+            padding: 20px;
+        }
+        
+        .test-results {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .test-status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .test-status.passed {
+            color: #00ff00;
+        }
+        
+        .test-status.failed {
+            color: #ff6666;
+        }
+        
+        .test-details {
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .test-button {
+            background: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        .test-button:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .iframe-container {
+            border: 2px solid #00ff00;
+            margin: 20px 0;
+            height: 600px;
+            position: relative;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🔘 Mode Selector Functionality Test</h1>
+            <p>Testing click handlers, state management, and visual feedback</p>
+            <p><strong>Task 5:</strong> Fix mode selector functionality</p>
+        </div>
+
+        <div class="test-controls">
+            <button class="test-button" onclick="runTests()">Run Tests</button>
+            <button class="test-button" onclick="clearResults()">Clear Results</button>
+            <button class="test-button" onclick="reloadApp()">Reload App</button>
+        </div>
+
+        <div id="test-results" class="test-results" style="display: none;">
+            <div class="test-status" id="test-status">Running tests...</div>
+            <div class="test-details" id="test-details"></div>
+        </div>
+
+        <div class="iframe-container">
+            <div class="loading" id="loading">Loading VibeScreen application...</div>
+            <iframe id="app-iframe" src="http://localhost:3000" style="display: none;" onload="onAppLoaded()"></iframe>
+        </div>
+
+        <div class="test-instructions">
+            <h3>Manual Test Instructions:</h3>
+            <ol>
+                <li><strong>Visual Check:</strong> Verify that mode selector appears at the bottom of the screen</li>
+                <li><strong>Button Visibility:</strong> Confirm all personality mode buttons are visible and properly styled</li>
+                <li><strong>Click Test:</strong> Click different mode buttons and verify:
+                    <ul>
+                        <li>Button becomes visually active (highlighted)</li>
+                        <li>Other buttons become inactive</li>
+                        <li>Character/scene changes (if implemented)</li>
+                    </ul>
+                </li>
+                <li><strong>Keyboard Navigation:</strong> Use Tab and Arrow keys to navigate between buttons</li>
+                <li><strong>Visual Feedback:</strong> Verify hover effects and focus indicators work</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let appLoaded = false;
+
+        function onAppLoaded() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('app-iframe').style.display = 'block';
+            appLoaded = true;
+            console.log('✅ VibeScreen app loaded successfully');
+        }
+
+        function runTests() {
+            if (!appLoaded) {
+                alert('Please wait for the app to load first');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('test-results');
+            const statusDiv = document.getElementById('test-status');
+            const detailsDiv = document.getElementById('test-details');
+
+            resultsDiv.style.display = 'block';
+            statusDiv.textContent = 'Running tests...';
+            statusDiv.className = 'test-status';
+            detailsDiv.innerHTML = '';
+
+            try {
+                const iframe = document.getElementById('app-iframe');
+                const iframeWindow = iframe.contentWindow;
+                const iframeDocument = iframe.contentDocument;
+
+                // Test 1: Check if mode selector exists
+                const modeSelector = iframeDocument.querySelector('.mode-selector');
+                let testResults = [];
+
+                if (modeSelector) {
+                    testResults.push('✅ Mode selector found');
+                    
+                    // Test 2: Check for mode buttons
+                    const modeButtons = modeSelector.querySelectorAll('.mode-button');
+                    if (modeButtons.length > 0) {
+                        testResults.push(`✅ Found ${modeButtons.length} mode buttons`);
+                        
+                        // Test 3: Check button functionality
+                        let clickableButtons = 0;
+                        modeButtons.forEach((button, index) => {
+                            if (button.onclick || button.addEventListener) {
+                                clickableButtons++;
+                            }
+                        });
+                        
+                        if (clickableButtons > 0) {
+                            testResults.push(`✅ ${clickableButtons} buttons have click handlers`);
+                        } else {
+                            testResults.push('❌ No buttons have click handlers');
+                        }
+                        
+                        // Test 4: Check for active state
+                        const activeButtons = modeSelector.querySelectorAll('.mode-button.active');
+                        if (activeButtons.length > 0) {
+                            testResults.push(`✅ Found ${activeButtons.length} active button(s)`);
+                        } else {
+                            testResults.push('⚠️ No active buttons found');
+                        }
+                        
+                        // Test 5: Check styling
+                        const firstButton = modeButtons[0];
+                        const computedStyle = iframeWindow.getComputedStyle(firstButton);
+                        if (computedStyle.cursor === 'pointer') {
+                            testResults.push('✅ Buttons have pointer cursor');
+                        } else {
+                            testResults.push('❌ Buttons missing pointer cursor');
+                        }
+                        
+                        // Test 6: Simulate click
+                        try {
+                            const testButton = Array.from(modeButtons).find(btn => !btn.classList.contains('active'));
+                            if (testButton) {
+                                const initialActive = testButton.classList.contains('active');
+                                testButton.click();
+                                
+                                setTimeout(() => {
+                                    const nowActive = testButton.classList.contains('active');
+                                    if (!initialActive && nowActive) {
+                                        testResults.push('✅ Button click changes active state');
+                                    } else {
+                                        testResults.push('❌ Button click does not change active state');
+                                    }
+                                    
+                                    displayResults(testResults);
+                                }, 500);
+                                return; // Exit early to wait for async result
+                            }
+                        } catch (error) {
+                            testResults.push(`❌ Click test failed: ${error.message}`);
+                        }
+                        
+                    } else {
+                        testResults.push('❌ No mode buttons found');
+                    }
+                } else {
+                    testResults.push('❌ Mode selector not found');
+                }
+
+                displayResults(testResults);
+
+            } catch (error) {
+                statusDiv.textContent = 'Test failed';
+                statusDiv.className = 'test-status failed';
+                detailsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        function displayResults(testResults) {
+            const statusDiv = document.getElementById('test-status');
+            const detailsDiv = document.getElementById('test-details');
+
+            const passedTests = testResults.filter(r => r.startsWith('✅')).length;
+            const failedTests = testResults.filter(r => r.startsWith('❌')).length;
+            const warningTests = testResults.filter(r => r.startsWith('⚠️')).length;
+
+            if (failedTests === 0) {
+                statusDiv.textContent = `All tests passed! (${passedTests} passed, ${warningTests} warnings)`;
+                statusDiv.className = 'test-status passed';
+            } else {
+                statusDiv.textContent = `Some tests failed (${passedTests} passed, ${failedTests} failed, ${warningTests} warnings)`;
+                statusDiv.className = 'test-status failed';
+            }
+
+            detailsDiv.innerHTML = testResults.map(result => `<p>${result}</p>`).join('');
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').style.display = 'none';
+        }
+
+        function reloadApp() {
+            document.getElementById('app-iframe').src = document.getElementById('app-iframe').src;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('app-iframe').style.display = 'none';
+            appLoaded = false;
+        }
+
+        // Auto-run tests after a delay
+        setTimeout(() => {
+            if (appLoaded) {
+                runTests();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

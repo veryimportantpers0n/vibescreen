@@ -14,17 +14,17 @@
 
 /* CSS Custom Properties for Matrix Green Theme */
 :root {
-  /* Matrix Green Color Palette */
-  --matrix-green: #00FF00;
-  --matrix-green-dim: #008F11;
-  --matrix-green-dark: #003300;
-  --matrix-green-bright: #66FF66;
+  /* Matrix Green Color Palette - Brighter */
+  --matrix-green: #00FF41;
+  --matrix-green-dim: #00CC00;
+  --matrix-green-dark: #006600;
+  --matrix-green-bright: #88FF88;
   
-  /* Terminal Colors */
-  --terminal-black: #000000;
-  --terminal-dark: #0a0a0a;
-  --terminal-darker: #050505;
-  --terminal-gray: #333333;
+  /* Terminal Colors - Increased Brightness */
+  --terminal-black: #1a1a1a;
+  --terminal-dark: #2a2a2a;
+  --terminal-darker: #1f1f1f;
+  --terminal-gray: #444444;
   
   /* Effects */
   --phosphor-glow: #00FF0080;
@@ -91,6 +91,7 @@
   --z-ui: 100;
   --z-terminal: 200;
   --z-modal: 300;
+  --z-debug: 400;
 }
 
 /* Reset and Base Styles */
@@ -118,18 +119,18 @@ body {
   margin: 0;
   padding: 0;
   
-  /* Terminal aesthetic */
+  /* Terminal aesthetic - Brighter background */
   background: 
     linear-gradient(
       90deg,
-      transparent 98%,
+      transparent 99.5%,
       var(--scan-line-color) 100%
     ),
     linear-gradient(
       var(--terminal-black) 50%,
       var(--terminal-darker) 50%
     );
-  background-size: 3px 3px, 100% 2px;
+  background-size: 6px 6px, 100% 4px;
   
   /* Prevent text selection for ambient feel */
   user-select: none;
@@ -954,47 +955,7 @@ p, span, div, button, input, textarea, select {
   animation: blink 1s infinite;
 }
 
-/* Development Info Panel */
-.dev-info {
-  position: fixed;
-  top: 100px;
-  right: var(--spacing-lg);
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid var(--matrix-green-dim);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-md);
-  max-width: 300px;
-  z-index: var(--z-ui);
-  font-size: 12px;
-}
 
-.dev-info h3 {
-  margin-bottom: var(--spacing-sm);
-  font-size: 14px;
-}
-
-.dev-info ul {
-  list-style: none;
-  margin-bottom: var(--spacing-md);
-}
-
-.dev-info li {
-  margin-bottom: var(--spacing-xs);
-  color: var(--matrix-green-dim);
-}
-
-.config-display {
-  margin-top: var(--spacing-sm);
-}
-
-.config-display pre {
-  background: var(--terminal-darker);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius);
-  font-size: 10px;
-  overflow-x: auto;
-  color: var(--matrix-green-dark);
-}
 
 /* Animations */
 @keyframes phosphor-glow {
@@ -1192,14 +1153,7 @@ p, span, div, button, input, textarea, select {
     font-size: 10px;
   }
   
-  .dev-info {
-    position: fixed;
-    top: 60px;
-    right: var(--spacing-md);
-    left: var(--spacing-md);
-    max-width: none;
-    font-size: 10px;
-  }
+
 }
 
 /* Enhanced Responsive Breakpoints System */
@@ -1385,9 +1339,7 @@ p, span, div, button, input, textarea, select {
     font-size: 20px;
   }
   
-  .dev-info {
-    display: none; /* Hide dev info on very small screens */
-  }
+
 }
 
 /* Enhanced Mobile-First Responsive Design */
@@ -1613,13 +1565,13 @@ p, span, div, button, input, textarea, select {
 
 @media (prefers-contrast: high) {
   :root {
-    --matrix-green: #00FF00;
+    --matrix-green: #00FF41;
     --matrix-green-dim: #00CC00;
     --matrix-green-dark: #006600;
     --matrix-green-bright: #66FF66;
     --terminal-black: #000000;
     --terminal-dark: #111111;
-    --phosphor-glow: #00FF00FF;
+    --phosphor-glow: #00FF41FF;
     
     /* Enhanced text shadows for high contrast */
     --text-shadow-subtle: none;
@@ -2766,19 +2718,7 @@ der Styles */
   pointer-events: none;
 }
 
-.performance-monitor {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.8);
-  color: var(--matrix-green);
-  font-family: var(--font-terminal);
-  font-size: 0.7rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  z-index: 9999;
-  border: 1px solid var(--matrix-green);
-}
+
 
 .performance-stats span {
   display: inline-block;

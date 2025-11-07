@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { runThemeTests } from '../utils/modeThemeValidator.js';
-import { runComprehensiveThemeTests } from '../utils/modeThemeTest.js';
+import { runComprehensiveThemeTests } from '../tests/validation/modeThemeTest.js';
 import { useThemeManager } from '../utils/useThemeManager.js';
 import { getAccessibilityManager, announce, announceStatus } from '../utils/accessibilityManager';
 
@@ -17,7 +17,7 @@ const ModeSelectorWithAPI = ({
   initialActiveMode = null 
 }) => {
   const [modes, setModes] = useState([]);
-  const [activeMode, setActiveMode] = useState(initialActiveMode);
+  const [activeMode, setActiveMode] = useState(initialActiveMode || 'corporate-ai');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -52,13 +52,11 @@ const ModeSelectorWithAPI = ({
         
         setModes(modesData);
         
-        // Auto-select first mode if no active mode exists and modes are available
-        if (modesData.length > 0 && !activeMode) {
+        // Only auto-select if no initial active mode was provided
+        if (modesData.length > 0 && !activeMode && !initialActiveMode) {
           const firstMode = modesData[0];
           setActiveMode(firstMode.id);
-          if (onModeChange) {
-            onModeChange(firstMode);
-          }
+          // Don't trigger onModeChange on initial load to prevent automatic switching
         }
         
       } catch (error) {
@@ -83,12 +81,10 @@ const ModeSelectorWithAPI = ({
         
         setModes(fallbackModes);
         
-        // Auto-select first fallback mode
-        if (!activeMode) {
+        // Only auto-select fallback if no initial active mode was provided
+        if (!activeMode && !initialActiveMode) {
           setActiveMode(fallbackModes[0].id);
-          if (onModeChange) {
-            onModeChange(fallbackModes[0]);
-          }
+          // Don't trigger onModeChange on initial load to prevent automatic switching
         }
         
       } finally {
@@ -99,15 +95,26 @@ const ModeSelectorWithAPI = ({
     loadModes();
   }, []); // Empty dependency array - only run on mount
 
+  // Sync activeMode with initialActiveMode changes
+  useEffect(() => {
+    if (initialActiveMode && initialActiveMode !== activeMode) {
+      setActiveMode(initialActiveMode);
+    }
+  }, [initialActiveMode, activeMode]);
+
   // Handle mode selection from the UI
   const handleModeSelect = async (mode) => {
     if (mode && mode.id !== activeMode) {
-      // Switch theme first
-      await themeManager.switchTheme(mode.id);
-      
       setActiveMode(mode.id);
       if (onModeChange) {
         onModeChange(mode);
+      }
+      
+      // Switch theme after mode change to prevent circular dependencies
+      try {
+        await themeManager.switchTheme(mode.id);
+      } catch (error) {
+        console.warn('Theme switch failed:', error);
       }
     }
   };
@@ -289,19 +296,20 @@ const ModeSelector = ({
       setTimeout(() => {
         validateModeThemes();
         
+        // DISABLED: Automatic theme testing causes unwanted mode cycling
         // Run comprehensive theme testing in development
-        if (process.env.NODE_ENV === 'development') {
-          runThemeTests(modes);
-          
-          // Run comprehensive visual consistency tests
-          if (containerRef.current) {
-            runComprehensiveThemeTests(containerRef.current).then(results => {
-              console.log('🎨 Comprehensive Theme Test Results:', results);
-            }).catch(error => {
-              console.error('Theme testing failed:', error);
-            });
-          }
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   runThemeTests(modes);
+        //   
+        //   // Run comprehensive visual consistency tests
+        //   if (containerRef.current) {
+        //     runComprehensiveThemeTests(containerRef.current).then(results => {
+        //       console.log('🎨 Comprehensive Theme Test Results:', results);
+        //     }).catch(error => {
+        //       console.error('Theme testing failed:', error);
+        //     });
+        //   }
+        // }
       }, 100);
     }
   }, [modes]);
@@ -335,11 +343,6 @@ const ModeSelector = ({
         setTimeout(() => {
           containerRef.current.classList.remove('mode-transitioning');
         }, 600);
-      }
-      
-      // Apply theme if themeManager is available
-      if (themeManager) {
-        await themeManager.switchTheme(mode.id);
       }
       
       onModeChange(mode);

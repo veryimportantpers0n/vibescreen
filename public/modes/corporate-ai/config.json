@@ -1,0 +1,18 @@
+{
+  "id": "corporate-ai",
+  "name": "Corporate AI",
+  "popupStyle": "overlay",
+  "minDelaySeconds": 12,
+  "maxDelaySeconds": 45,
+  "messageProbabilities": {
+    "cliche": 0.7,
+    "exaggeration": 0.1,
+    "other": 0.2
+  },
+  "sceneProps": {
+    "bgColor": "#f7f7f7",
+    "ambientSpeed": 0.2,
+    "primaryColor": "#007acc",
+    "lightIntensity": 0.8
+  }
+}

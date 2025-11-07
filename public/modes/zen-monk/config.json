@@ -1,0 +1,18 @@
+{
+  "id": "zen-monk",
+  "name": "Zen Monk",
+  "popupStyle": "speechBubble",
+  "minDelaySeconds": 20,
+  "maxDelaySeconds": 60,
+  "messageProbabilities": {
+    "haiku": 0.6,
+    "cliche": 0.2,
+    "other": 0.2
+  },
+  "sceneProps": {
+    "bgColor": "#2a2a2a",
+    "ambientSpeed": 0.05,
+    "primaryColor": "#00ff88",
+    "lightIntensity": 0.4
+  }
+}

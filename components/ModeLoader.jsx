@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import SceneWrapper from './SceneWrapper';
 import ModeLoaderErrorBoundary from './ModeLoaderErrorBoundary';
 import DefaultScene from './DefaultScene';
 import DefaultCharacter from './DefaultCharacter';
 import { modeLoadingRetry, retryDynamicImport } from '../utils/retryMechanism';
+import { getModeComponents } from '../utils/modeRegistry';
 import { logModeError, logComponentError, logValidationError } from '../utils/errorLogger';
 import { ComponentInterfaceValidator, validateModeStructure } from '../utils/componentInterfaceValidator';
 import { 
@@ -227,6 +228,8 @@ const ModeLoader = React.forwardRef(({
   const preloaderRef = useRef(null);
   const performanceMonitorRef = useRef(new PerformanceMonitor());
   const resourceCleanupRef = useRef(new Set()); // Track resources for cleanup
+  const initializationRef = useRef(false); // Prevent multiple initializations
+  const isInitializingRef = useRef(false); // Track if currently initializing
   
   // Initialize component validation system
   const validatorRef = useRef(new ComponentInterfaceValidator({
@@ -242,6 +245,8 @@ const ModeLoader = React.forwardRef(({
   ];
 
   const defaultMode = 'corporate-ai';
+
+
 
   /**
    * Component validation engine - verifies exports match required interfaces
@@ -281,7 +286,7 @@ const ModeLoader = React.forwardRef(({
     if (cachedComponents) {
       console.log(`⚡ Loading mode from cache: ${modeName}`);
       
-      // Update state with cached components
+      // Update state with cached components AND notify parent
       if (mountedRef.current) {
         setModeComponents(prev => ({
           ...prev,
@@ -295,6 +300,14 @@ const ModeLoader = React.forwardRef(({
           ...prev,
           [modeName]: cachedComponents.config
         }));
+
+        // Notify parent component about loaded mode
+        if (onModeChange) {
+          onModeChange(modeName, {
+            scene: cachedComponents.scene,
+            character: cachedComponents.character
+          }, cachedComponents.config);
+        }
       }
 
       // End performance timer for cached load
@@ -328,24 +341,17 @@ const ModeLoader = React.forwardRef(({
       // Use retry mechanism for dynamic imports
       const operationId = `load-mode-${modeName}`;
       
-      const [sceneModule, characterModule, configModule, messagesModule] = await Promise.all([
-        retryDynamicImport(`../modes/${modeName}/scene.js`, `${operationId}-scene`).catch(err => {
-          logComponentError(err, 'scene', { mode: modeName });
-          return null;
-        }),
-        retryDynamicImport(`../modes/${modeName}/character.js`, `${operationId}-character`).catch(err => {
-          logComponentError(err, 'character', { mode: modeName });
-          return null;
-        }),
-        retryDynamicImport(`../modes/${modeName}/config.json`, `${operationId}-config`).catch(err => {
-          console.warn(`Failed to load config for ${modeName}:`, err);
-          return null;
-        }),
-        retryDynamicImport(`../modes/${modeName}/messages.json`, `${operationId}-messages`).catch(err => {
-          console.warn(`Failed to load messages for ${modeName}:`, err);
-          return null;
-        })
-      ]);
+      // Use static registry instead of dynamic imports
+      const registryComponents = getModeComponents(modeName);
+      
+      if (!registryComponents) {
+        throw new Error(`Mode "${modeName}" not found in registry`);
+      }
+      
+      const sceneModule = { default: registryComponents.scene };
+      const characterModule = { default: registryComponents.character };
+      const configModule = { default: registryComponents.config };
+      const messagesModule = { default: registryComponents.messages };
 
       if (!mountedRef.current) return null;
 
@@ -388,6 +394,14 @@ const ModeLoader = React.forwardRef(({
           
           // Cache fallback components (with shorter TTL)
           componentCacheRef.current.set(`fallback-${modeName}`, fallbackData);
+          
+          // Notify parent component about fallback mode
+          if (onModeChange) {
+            onModeChange(modeName, {
+              scene: DefaultScene,
+              character: DefaultCharacter
+            }, fallbackData.config);
+          }
           
           // End performance timer for fallback load
           performanceMonitorRef.current.endSwitchTimer(modeName, false);
@@ -515,6 +529,14 @@ const ModeLoader = React.forwardRef(({
         
         // Reset retry count on successful load
         retryCountsRef.current[modeName] = 0;
+
+        // Notify parent component about loaded mode
+        if (onModeChange) {
+          onModeChange(modeName, {
+            scene: SceneComponent,
+            character: CharacterComponent
+          }, modeData.config);
+        }
 
         // End performance timer for fresh load
         performanceMonitorRef.current.endSwitchTimer(modeName, false);
@@ -644,6 +666,14 @@ const ModeLoader = React.forwardRef(({
    */
   useEffect(() => {
     const initializeModeLoader = async () => {
+      // Prevent multiple initializations
+      if (initializationRef.current) {
+        console.log('⚠️ ModeLoader already initialized, skipping...');
+        return;
+      }
+      initializationRef.current = true;
+      isInitializingRef.current = true;
+      
       try {
         console.log('🚀 Initializing ModeLoader with enhanced resource management...');
         
@@ -672,11 +702,19 @@ const ModeLoader = React.forwardRef(({
         );
         
         // Load the current mode
+        console.log(`🔄 Attempting to load initial mode: ${currentMode}`);
         const modeData = await loadModeComponents(currentMode);
         
         if (!modeData) {
-          // Fallback to default mode if current mode fails
-          await fallbackToDefault();
+          console.warn(`⚠️ Initial mode load failed for: ${currentMode}`);
+          // Only fallback if we're not already on the default mode
+          if (currentMode !== defaultMode) {
+            await fallbackToDefault();
+          } else {
+            console.warn('⚠️ Default mode load attempt failed during initialization - this is usually a timing issue and can be ignored if the app works normally');
+          }
+        } else {
+          console.log(`✅ Initial mode loaded successfully: ${currentMode}`);
         }
         
         // Start background preloading of popular modes
@@ -687,11 +725,13 @@ const ModeLoader = React.forwardRef(({
         }, 1000); // Delay to not interfere with initial load
         
         setIsInitialized(true);
+        isInitializingRef.current = false; // Initialization complete
         console.log('✅ ModeLoader initialized successfully with enhanced resource management');
         
       } catch (error) {
         console.error('❌ ModeLoader initialization failed:', error);
         setIsInitialized(true); // Still mark as initialized to show error state
+        isInitializingRef.current = false; // Initialization complete (with error)
       }
     };
 
@@ -773,11 +813,15 @@ const ModeLoader = React.forwardRef(({
    * Handle mode changes with enhanced cleanup and resource management
    */
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || isInitializingRef.current) return;
 
     const handleModeChange = async () => {
+      // Get current state values to avoid stale closures
+      const currentModeComponents = modeComponents;
+      const currentModeConfigs = modeConfigs;
+      
       // Get previous mode for cleanup
-      const previousModes = Object.keys(modeComponents).filter(mode => mode !== currentMode);
+      const previousModes = Object.keys(currentModeComponents).filter(mode => mode !== currentMode);
       
       // Validate mode exists
       if (!availableModes.includes(currentMode)) {
@@ -797,7 +841,7 @@ const ModeLoader = React.forwardRef(({
       }
 
       // Load new mode if not already loaded
-      if (!modeComponents[currentMode] || !modeConfigs[currentMode]) {
+      if (!currentModeComponents[currentMode] || !currentModeConfigs[currentMode]) {
         console.log(`🔄 Loading mode: ${currentMode}`);
         
         // Track this mode for resource cleanup
@@ -819,7 +863,7 @@ const ModeLoader = React.forwardRef(({
     };
 
     handleModeChange();
-  }, [currentMode, isInitialized, modeComponents, modeConfigs, availableModes, loadModeComponents, fallbackToDefault, cleanupModeResources]);
+  }, [currentMode, isInitialized, availableModes]);
 
   /**
    * Comprehensive cleanup on unmount with enhanced resource management
@@ -827,6 +871,8 @@ const ModeLoader = React.forwardRef(({
   useEffect(() => {
     return () => {
       mountedRef.current = false;
+      initializationRef.current = false; // Reset initialization flag
+      isInitializingRef.current = false; // Reset initializing flag
       
       console.log('🧹 Starting comprehensive ModeLoader cleanup...');
       
@@ -955,6 +1001,15 @@ const ModeLoader = React.forwardRef(({
     performanceStats
   };
 
+  // Memoize sceneProps to prevent infinite re-renders - use specific config values
+  const sceneProps = useMemo(() => {
+    const config = modeConfigs[currentMode] || {};
+    return {
+      bgColor: config.colors?.primary || '#000000',
+      ambientSpeed: config.animations?.speed || 1.0
+    };
+  }, [modeConfigs[currentMode]?.colors?.primary, modeConfigs[currentMode]?.animations?.speed]);
+
   // Loading state with detailed feedback
   if (!isInitialized || currentModeData.isLoading) {
     return (
@@ -1031,6 +1086,8 @@ const ModeLoader = React.forwardRef(({
     );
   }
 
+
+
   // Render content wrapped in error boundary
   const renderContent = () => {
     // Success state - render the loaded mode
@@ -1041,12 +1098,9 @@ const ModeLoader = React.forwardRef(({
         <div className={`mode-loader loaded ${className}`} style={style}>
           <SceneWrapper 
             mode={currentMode}
-            sceneProps={{
-              bgColor: currentModeData.config.colors?.primary || '#000000',
-              ambientSpeed: currentModeData.config.animations?.speed || 1.0
-            }}
+            sceneProps={sceneProps}
           >
-            <SceneComponent />
+            <SceneComponent sceneProps={sceneProps} />
           </SceneWrapper>
           {currentModeData.config.isFallback && (
             <div className="fallback-indicator" role="status">
@@ -1153,7 +1207,7 @@ const ModeLoader = React.forwardRef(({
 
 ModeLoader.propTypes = {
   currentMode: PropTypes.string,
-  onModeChange: PropTypes.func,
+  onModeChange: PropTypes.func, // Called with (modeName, components, config) when mode loads
   onError: PropTypes.func,
   className: PropTypes.string,
   style: PropTypes.object

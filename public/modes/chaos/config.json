@@ -1,0 +1,18 @@
+{
+  "id": "chaos",
+  "name": "Chaos",
+  "popupStyle": "overlay",
+  "minDelaySeconds": 5,
+  "maxDelaySeconds": 20,
+  "messageProbabilities": {
+    "exaggeration": 0.5,
+    "cliche": 0.3,
+    "other": 0.2
+  },
+  "sceneProps": {
+    "bgColor": "#000000",
+    "ambientSpeed": 2.0,
+    "primaryColor": "#ff0080",
+    "glitchIntensity": 0.8
+  }
+}

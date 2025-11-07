@@ -1,0 +1,27 @@
+{
+  "messageSystem": {
+    "defaultMinDelay": 15,
+    "defaultMaxDelay": 45,
+    "maxConcurrentMessages": 3,
+    "messageTimeout": 8000,
+    "animationDuration": 300
+  },
+  "ui": {
+    "theme": "matrix-green",
+    "animationSpeed": 1.0,
+    "terminalAutoHideDelay": 2000,
+    "phosphorGlowIntensity": 0.8
+  },
+  "performance": {
+    "enableCaching": true,
+    "maxCacheSize": 1000,
+    "preloadModes": ["corporate-ai", "zen-monk", "chaos"],
+    "enablePerformanceMonitoring": true
+  },
+  "accessibility": {
+    "reducedMotion": false,
+    "highContrast": false,
+    "enableScreenReader": true,
+    "keyboardNavigation": true
+  }
+}

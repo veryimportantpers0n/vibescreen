@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef, useCallback, useEffect } from 'react';
 
-function CorporateAICharacter({ onSpeak, config, isAnimating, mode }) {
+function CorporateAICharacter({ onSpeak }) {
   const meshRef = useRef();
   const speakingRef = useRef(false);
   
@@ -18,7 +18,7 @@ function CorporateAICharacter({ onSpeak, config, isAnimating, mode }) {
       meshRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.1;
       
       // Speak animation - slight scale pulse
-      if (speakingRef.current || isAnimating) {
+      if (speakingRef.current) {
         const pulse = 1 + Math.sin(state.clock.elapsedTime * 10) * 0.1;
         meshRef.current.scale.setScalar(pulse);
       } else {
@@ -27,18 +27,9 @@ function CorporateAICharacter({ onSpeak, config, isAnimating, mode }) {
     }
   });
   
-  // Handle speak trigger from parent (new prop-based system)
+  // Register speak function with parent
   useEffect(() => {
-    if (onSpeak > 0) {
-      speak();
-    }
-  }, [onSpeak, speak]);
-  
-  // Legacy speak function registration (for backward compatibility)
-  useEffect(() => {
-    if (typeof onSpeak === 'function') {
-      onSpeak(speak);
-    }
+    if (onSpeak) onSpeak(speak);
   }, [onSpeak, speak]);
   
   return (

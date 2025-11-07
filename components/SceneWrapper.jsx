@@ -44,14 +44,14 @@ const SceneWrapper = ({
     }
   };
 
-  // Merge default config with provided sceneProps, allowing deep overrides
-  const config = {
+  // Merge default config with provided sceneProps, allowing deep overrides - memoized to prevent re-renders
+  const config = useMemo(() => ({
     ...defaultConfig,
     ...sceneProps,
     camera: { ...defaultConfig.camera, ...(sceneProps.camera || {}) },
     lighting: { ...defaultConfig.lighting, ...(sceneProps.lighting || {}) },
     performance: { ...defaultConfig.performance, ...(sceneProps.performance || {}) }
-  };
+  }), [sceneProps]);
 
   // Performance monitoring with 60fps target
   const updatePerformanceStats = useCallback(() => {

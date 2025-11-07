@@ -1,0 +1,18 @@
+{
+  "id": "gamer-rage",
+  "name": "Gamer Rage",
+  "popupStyle": "overlay",
+  "minDelaySeconds": 5,
+  "maxDelaySeconds": 20,
+  "messageProbabilities": {
+    "competitive": 0.6,
+    "exaggeration": 0.3,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#001100",
+    "ambientSpeed": 2.0,
+    "primaryColor": "#00ff00",
+    "rageIntensity": 1.2
+  }
+}

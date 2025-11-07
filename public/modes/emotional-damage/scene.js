@@ -6,15 +6,15 @@ function EmotionalDamageScene({ sceneProps }) {
   const screenRef = useRef();
   
   useFrame((state) => {
-    // Subtle light variation
+    // Flickering light effect
     if (lightRef.current) {
-      const flicker = 0.4 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+      const flicker = 0.3 + Math.random() * (sceneProps?.flickerIntensity || 0.3);
       lightRef.current.intensity = flicker;
     }
     
-    // Gentle screen glow variation
+    // Flickering screen effect
     if (screenRef.current) {
-      const screenFlicker = 0.15 + Math.sin(state.clock.elapsedTime * 1.5) * 0.03;
+      const screenFlicker = 0.1 + Math.random() * 0.2;
       screenRef.current.material.emissiveIntensity = screenFlicker;
     }
   });

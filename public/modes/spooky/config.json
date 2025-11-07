@@ -1,0 +1,18 @@
+{
+  "id": "spooky",
+  "name": "Spooky",
+  "popupStyle": "overlay",
+  "minDelaySeconds": 25,
+  "maxDelaySeconds": 50,
+  "messageProbabilities": {
+    "eerie": 0.7,
+    "cliche": 0.2,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#1a0d26",
+    "ambientSpeed": 0.4,
+    "primaryColor": "#9932cc",
+    "fogIntensity": 0.6
+  }
+}

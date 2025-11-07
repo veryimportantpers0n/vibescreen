@@ -7,33 +7,32 @@ function ChaosScene({ sceneProps }) {
   
   useFrame((state, delta) => {
     if (groupRef.current) {
-      // Minimal subtle movement
-      groupRef.current.rotation.x += (Math.random() - 0.5) * delta * 0.1;
-      groupRef.current.rotation.y += (Math.random() - 0.5) * delta * 0.1;
-      groupRef.current.rotation.z += (Math.random() - 0.5) * delta * 0.1;
+      // Chaotic jittering movement
+      groupRef.current.rotation.x += (Math.random() - 0.5) * delta * 2;
+      groupRef.current.rotation.y += (Math.random() - 0.5) * delta * 2;
+      groupRef.current.rotation.z += (Math.random() - 0.5) * delta * 2;
       
-      // Very subtle position jitter
-      groupRef.current.position.x = (Math.random() - 0.5) * 0.01;
-      groupRef.current.position.y = (Math.random() - 0.5) * 0.01;
+      // Random position jitter
+      groupRef.current.position.x = (Math.random() - 0.5) * 0.1;
+      groupRef.current.position.y = (Math.random() - 0.5) * 0.1;
     }
     
-    // Update each plane with minimal effects
+    // Update each plane with glitchy effects
     planeRefs.current.forEach((plane, i) => {
       if (plane) {
-        // Subtle color variation instead of glitching
-        const time = state.clock.elapsedTime;
-        const hue = (time * 10 + i * 60) % 360;
-        plane.material.color.setHSL(hue / 360, 0.8, 0.4);
+        // Random color glitching
+        const hue = Math.random() * 360;
+        plane.material.color.setHSL(hue / 360, 1, 0.5);
         
-        // Minimal movement
-        plane.position.x += (Math.random() - 0.5) * 0.005;
-        plane.position.y += (Math.random() - 0.5) * 0.005;
-        plane.position.z += (Math.random() - 0.5) * 0.005;
+        // Jittery movement
+        plane.position.x += (Math.random() - 0.5) * 0.1;
+        plane.position.y += (Math.random() - 0.5) * 0.1;
+        plane.position.z += (Math.random() - 0.5) * 0.1;
         
-        // Gentle rotation
-        plane.rotation.x += (Math.random() - 0.5) * delta * 0.2;
-        plane.rotation.y += (Math.random() - 0.5) * delta * 0.2;
-        plane.rotation.z += (Math.random() - 0.5) * delta * 0.2;
+        // Chaotic rotation
+        plane.rotation.x += (Math.random() - 0.5) * delta * 5;
+        plane.rotation.y += (Math.random() - 0.5) * delta * 5;
+        plane.rotation.z += (Math.random() - 0.5) * delta * 5;
       }
     });
   });

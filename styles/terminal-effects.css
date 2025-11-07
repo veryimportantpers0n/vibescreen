@@ -2,15 +2,15 @@
 
 /* CSS Custom Properties for Terminal Effects */
 :root {
-  --matrix-green: #00ff00;
+  --matrix-green: #00FF41;
   --matrix-green-dim: #00cc00;
   --matrix-green-dark: #008800;
   --matrix-green-bright: #66ff66;
   --phosphor-glow: rgba(0, 255, 0, 0.5);
   --phosphor-glow-bright: rgba(0, 255, 0, 0.8);
   --terminal-black: rgba(0, 0, 0, 0.95);
-  --scan-line-opacity: 0.02;
-  --crt-flicker-intensity: 0.05;
+  --scan-line-opacity: 0.001;
+  --crt-flicker-intensity: 0.001;
 }
 
 /* Enhanced Phosphor Glow Effects with Multi-Layer Text Shadows */
@@ -177,10 +177,10 @@
   bottom: 0;
   background: radial-gradient(
     circle at center,
-    rgba(0, 255, 0, 0.02) 0%,
+    rgba(0, 255, 65, 0.005) 0%,
     transparent 70%
   );
-  animation: crt-glow-pulse 4s ease-in-out infinite;
+  animation: crt-glow-pulse 8s ease-in-out infinite;
 }
 
 .crt-screen::after {
@@ -193,10 +193,10 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 255, 0, 0.01) 50%,
+    rgba(0, 255, 65, 0.002) 50%,
     transparent 100%
   );
-  animation: crt-flicker 3s ease-in-out infinite;
+  animation: crt-flicker 6s ease-in-out infinite;
 }
 
 /* CRT Animations */
@@ -348,7 +348,7 @@
   bottom: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.1;
+  opacity: 0.02;
   background: transparent;
 }
 
@@ -421,7 +421,7 @@
 /* High Contrast Mode Support */
 @media (prefers-contrast: high) {
   :root {
-    --matrix-green: #00ff00;
+    --matrix-green: #00FF41;
     --matrix-green-dim: #00cc00;
     --phosphor-glow: transparent;
     --scan-line-opacity: 0;
@@ -452,8 +452,8 @@
 /* Mobile Optimizations */
 @media (max-width: 768px) {
   :root {
-    --scan-line-opacity: 0.01;
-    --crt-flicker-intensity: 0.02;
+    --scan-line-opacity: 0.0005;
+    --crt-flicker-intensity: 0.0005;
   }
   
   .phosphor-glow {
@@ -614,16 +614,16 @@
     linear-gradient(
       0deg,
       transparent 0%,
-      rgba(0, 255, 0, 0.005) 50%,
+      rgba(0, 255, 65, 0.001) 50%,
       transparent 100%
     ),
     linear-gradient(
       90deg,
       transparent 0%,
-      rgba(0, 255, 0, 0.005) 50%,
+      rgba(0, 255, 65, 0.001) 50%,
       transparent 100%
     );
-  animation: crt-interference 12s ease-in-out infinite;
+  animation: crt-interference 24s ease-in-out infinite;
 }
 
 .crt-monitor::after {
@@ -636,15 +636,15 @@
   background: 
     radial-gradient(
       circle at 30% 40%,
-      rgba(0, 255, 0, 0.02) 0%,
+      rgba(0, 255, 65, 0.005) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 70% 60%,
-      rgba(0, 255, 0, 0.015) 0%,
+      rgba(0, 255, 65, 0.003) 0%,
       transparent 50%
     );
-  animation: crt-glow-drift 8s ease-in-out infinite alternate;
+  animation: crt-glow-drift 16s ease-in-out infinite alternate;
 }
 
 @keyframes crt-interference {

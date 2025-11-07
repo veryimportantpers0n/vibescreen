@@ -5,7 +5,8 @@ import CharacterHost from '../components/CharacterHost';
 import TerminalInterface from '../components/TerminalInterface';
 import MessageController from '../components/MessageController';
 import ModeSwitchControllerComponent from '../components/ModeSwitchController';
-import TypingEffect from '../components/TypingEffect';
+import ModeSelectorWithAPI from '../components/ModeSelector';
+
 
 export default function Home() {
   const { currentMode, globalConfig, setCurrentMode, messagesPaused, setMessagesPaused } = useAppContext();
@@ -23,15 +24,33 @@ export default function Home() {
   }, []);
 
   // Handle mode changes from ModeLoader
-  const handleModeChange = (newMode) => {
-    console.log(`🔄 Mode change requested: ${newMode}`);
+  const handleModeChange = (newMode, components, config) => {
+    console.log(`🔄 Mode change requested: ${newMode}`, { hasComponents: !!components, hasConfig: !!config });
+    
+    // Update current mode
     if (setCurrentMode) {
       setCurrentMode(newMode);
     }
+    
+    // Update components and config if provided
+    if (components) {
+      setModeComponents(prev => ({
+        ...prev,
+        [newMode]: components
+      }));
+    }
+    
+    if (config) {
+      setModeConfig(prev => ({
+        ...prev,
+        [newMode]: config
+      }));
+    }
   };
 
-  // Handle mode loading updates
+  // Handle mode loading updates (legacy support)
   const handleModeLoaded = (mode, components, config) => {
+    console.log(`📦 Mode loaded: ${mode}`, { hasComponents: !!components, hasConfig: !!config });
     setModeComponents(prev => ({
       ...prev,
       [mode]: components
@@ -128,7 +147,13 @@ export default function Home() {
   return (
     <ModeSwitchControllerComponent
       initialMode={currentMode}
-      onModeChange={setCurrentMode}
+      onModeChange={(newMode) => {
+        // Only update if it's actually different to prevent loops
+        if (newMode !== currentMode) {
+          console.log('🔄 ModeSwitchController mode change:', newMode);
+          setCurrentMode(newMode);
+        }
+      }}
       onLoadingStateChange={setLoadingState}
       onError={handleModeError}
       getCurrentModeData={() => ({
@@ -150,30 +175,14 @@ export default function Home() {
         {/* Header Section */}
         <header className="app-header" role="banner">
           <h1 className="app-title phosphor-glow" id="app-title">
-            <TypingEffect 
-              text="VibeScreen" 
-              speed={100} 
-              delay={500}
-              cursor={true}
-              cursorChar="█"
-            />
+            VibeScreen
           </h1>
           <p className="app-subtitle phosphor-glow-subtle" aria-describedby="app-title">
-            <TypingEffect 
-              text="Ambient AI Companion for Second Monitors" 
-              speed={30} 
-              delay={2000}
-              cursor={false}
-            />
+            Ambient AI Companion for Second Monitors
           </p>
           <div className="hackathon-badge" role="img" aria-label="Hackathon submission badge">
             <span className="badge-text phosphor-glow-subtle">
-              <TypingEffect 
-                text="Kiroween 2025 • Frankenstein Category" 
-                speed={25} 
-                delay={4000}
-                cursor={false}
-              />
+              Kiroween 2025 • Frankenstein Category
             </span>
           </div>
         </header>
@@ -232,49 +241,18 @@ export default function Home() {
               onError={handleModeError}
             />
 
-        {/* Mode Selector Placeholder - Bottom Navigation */}
-        <nav 
-          className="mode-selector-placeholder"
-          role="navigation"
-          aria-label="Personality mode selection"
-        >
-          <div className="selector-container">
-            <h2 className="selector-title" id="mode-selector-title">Personality Modes</h2>
-            <div 
-              className="mode-buttons" 
-              role="group" 
-              aria-labelledby="mode-selector-title"
-            >
-              <button 
-                className="mode-button active" 
-                data-mode="corporate-ai"
-                aria-pressed="true"
-                aria-describedby="mode-selector-title"
-              >
-                Corporate AI
-              </button>
-              <button 
-                className="mode-button" 
-                data-mode="zen-monk"
-                aria-pressed="false"
-                aria-describedby="mode-selector-title"
-              >
-                Zen Monk
-              </button>
-              <button 
-                className="mode-button" 
-                data-mode="chaos"
-                aria-pressed="false"
-                aria-describedby="mode-selector-title"
-              >
-                Chaos
-              </button>
-              <span className="more-modes" aria-label="8 additional modes available">
-                + 8 more modes
-              </span>
-            </div>
-          </div>
-        </nav>
+        {/* Mode Selector - Bottom Navigation */}
+        <ModeSelectorWithAPI
+          onModeChange={(mode) => {
+            console.log('🔄 Mode selector change:', mode);
+            if (mode && mode.id && mode.id !== currentMode) {
+              // Direct mode change to avoid circular dependencies
+              setCurrentMode(mode.id);
+            }
+          }}
+          initialActiveMode={currentMode}
+          className="main-mode-selector"
+        />
 
         {/* Controls Placeholder - Top Right */}
         <aside 
@@ -314,34 +292,7 @@ export default function Home() {
 
             </main>
 
-            {/* Development Info Panel */}
-            {process.env.NODE_ENV === 'development' && (
-              <aside 
-                className="dev-info"
-                role="complementary"
-                aria-label="Development information"
-              >
-                <h3>Development Status</h3>
-                <ul role="list">
-                  <li>✅ Next.js App Structure</li>
-                  <li>✅ Global State Management</li>
-                  <li>✅ Error Boundary</li>
-                  <li>✅ Three.js Scene Wrapper</li>
-                  <li>✅ Mode Loader System</li>
-                  <li>✅ Terminal Interface</li>
-                  <li>✅ Mode Switch Controller</li>
-                  <li>✅ Message System</li>
-                </ul>
-                <div className="config-display">
-                  <strong>Switch Controller Status:</strong>
-                  <pre aria-label="Switch controller status">{JSON.stringify(switchController.getStatus(), null, 2)}</pre>
-                </div>
-                <div className="config-display">
-                  <strong>Global Config:</strong>
-                  <pre aria-label="Global configuration data">{JSON.stringify(globalConfig, null, 2)}</pre>
-                </div>
-              </aside>
-            )}
+
           </div>
         );
       }}

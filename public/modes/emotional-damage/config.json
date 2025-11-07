@@ -1,0 +1,19 @@
+{
+  "id": "emotional-damage",
+  "name": "Emotional Damage",
+  "popupStyle": "speechBubble",
+  "popupPosition": "above",
+  "minDelaySeconds": 15,
+  "maxDelaySeconds": 40,
+  "messageProbabilities": {
+    "sarcastic": 0.6,
+    "cliche": 0.3,
+    "other": 0.1
+  },
+  "sceneProps": {
+    "bgColor": "#1a1a1a",
+    "ambientSpeed": 0.1,
+    "primaryColor": "#666666",
+    "flickerIntensity": 0.3
+  }
+}

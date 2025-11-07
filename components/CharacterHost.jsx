@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { threeJSResourceManager } from '../utils/resourceCleanup';
 
 /**
@@ -171,6 +171,31 @@ const CharacterHost = ({
   }, [currentMode]);
 
   /**
+   * Character loading diagnostics and error logging
+   */
+  useEffect(() => {
+    console.log(`🎭 CharacterHost diagnostics for mode: ${currentMode}`);
+    console.log(`   - Character component provided: ${!!CharacterComponent}`);
+    console.log(`   - Character component type: ${CharacterComponent ? typeof CharacterComponent : 'undefined'}`);
+    console.log(`   - Config provided: ${!!config}`);
+    console.log(`   - Config keys: ${config ? Object.keys(config).join(', ') : 'none'}`);
+    
+    if (!CharacterComponent) {
+      console.warn(`⚠️ No character component for mode ${currentMode}, will use fallback wireframe cube`);
+      
+      // Log detailed debugging info
+      console.log('🔍 Character loading debug info:');
+      console.log('   - This usually means:');
+      console.log('     1. ModeLoader has not finished loading the mode');
+      console.log('     2. Character component failed to import');
+      console.log('     3. Character component is not properly exported');
+      console.log('     4. Parent component is not passing character correctly');
+    } else {
+      console.log(`✅ Character component loaded successfully for ${currentMode}`);
+    }
+  }, [currentMode, CharacterComponent, config]);
+
+  /**
    * Error boundary for character rendering
    */
   const handleCharacterError = useCallback((error) => {
@@ -231,37 +256,59 @@ const CharacterHost = ({
     onError: handleCharacterError
   };
 
-  // Loading state
-  if (!CharacterComponent) {
+  /**
+   * Guaranteed Fallback Character - Simple wireframe cube that always renders
+   */
+  const FallbackCharacter = ({ onSpeak, config }) => {
+    const meshRef = useRef();
+    const [isSpeaking, setIsSpeaking] = useState(false);
+
+    // Register speak callback
+    useEffect(() => {
+      if (onSpeak) {
+        setIsSpeaking(true);
+        setTimeout(() => setIsSpeaking(false), 2000);
+      }
+    }, [onSpeak]);
+
+    // Simple animation
+    useFrame((state) => {
+      if (meshRef.current) {
+        // Gentle rotation
+        meshRef.current.rotation.y = state.clock.elapsedTime * 0.5;
+        
+        // Floating animation
+        meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+        
+        // Speaking animation - scale pulse
+        if (isSpeaking) {
+          const pulse = 1 + Math.sin(state.clock.elapsedTime * 10) * 0.1;
+          meshRef.current.scale.setScalar(pulse);
+        } else {
+          meshRef.current.scale.setScalar(1);
+        }
+      }
+    });
+
     return (
-      <div 
-        className={`character-host loading ${className}`}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          width: `${canvasSize.width}px`,
-          height: `${canvasSize.height}px`,
-          zIndex: 100,
-          ...style
-        }}
-        role="status"
-        aria-live="polite"
-      >
-        <div className="character-loading">
-          <div className="loading-placeholder">
-            <div className="placeholder-icon terminal-text" aria-hidden="true">
-              👾
-            </div>
-            <div className="loading-text terminal-text">
-              &gt; LOADING_CHARACTER
-              <span className="loading-dots" aria-hidden="true"></span>
-            </div>
-          </div>
-        </div>
-        <div className="sr-only">Loading character for {currentMode} mode</div>
-      </div>
+      <mesh ref={meshRef}>
+        <boxGeometry args={[0.8, 0.8, 0.8]} />
+        <meshStandardMaterial 
+          color={config?.colors?.primary || '#00ff00'} 
+          wireframe 
+          transparent
+          opacity={0.8}
+        />
+      </mesh>
     );
+  };
+
+  // Use fallback character if no character component provided
+  const ActiveCharacterComponent = CharacterComponent || FallbackCharacter;
+
+  // Loading state - now shows fallback character instead of placeholder
+  if (!CharacterComponent) {
+    console.log(`⚠️ No character component for ${currentMode}, using fallback wireframe cube`);
   }
 
   // Error state
@@ -338,21 +385,27 @@ const CharacterHost = ({
           display: 'block'
         }}
       >
-        {/* Lighting setup optimized for character display */}
-        <ambientLight intensity={0.6} />
-        <pointLight 
+        {/* Enhanced lighting setup for better character visibility */}
+        <ambientLight intensity={1.2} />
+        <directionalLight 
           position={[2, 2, 2]} 
-          intensity={0.8}
-          color={config.colors?.primary || '#ffffff'}
+          intensity={1.0}
+          color={config?.colors?.primary || '#ffffff'}
+          castShadow={false}
         />
         <pointLight 
-          position={[-2, -2, 2]} 
-          intensity={0.4}
-          color={config.colors?.secondary || '#ffffff'}
+          position={[-2, 2, 2]} 
+          intensity={0.8}
+          color={config?.colors?.secondary || '#ffffff'}
+        />
+        <pointLight 
+          position={[0, -2, 2]} 
+          intensity={0.6}
+          color="#ffffff"
         />
         
         {/* Character Component with speak animation trigger */}
-        <CharacterComponent 
+        <ActiveCharacterComponent 
           onSpeak={speakTrigger}
           config={config}
           isAnimating={isAnimating}
